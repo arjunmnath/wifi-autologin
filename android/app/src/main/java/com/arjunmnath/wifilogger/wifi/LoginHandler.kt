@@ -12,37 +12,14 @@ import okhttp3.Request
 import org.jsoup.Jsoup
 import java.util.Properties
 import kotlin.collections.iterator
-import kotlin.system.exitProcess
 
-enum class ConnectionState {
-    CONNECTED,
-    DISCONNECTED,
-    CONNECTING
-}
+enum class LoginState{ CONNECTED, LOGGEDIN, MAXCONCURRENT, AUTHFAILED, UNKNOWN }
 
 
 class LoginHandler(private val context: LoginService) {
     private var nReTries = 3;
-    fun initiateLogout() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val generateCaptive= "http://172.16.222.1:1000/logout"
-            val captivePortalRequest= Request.Builder()
-                .url(generateCaptive)
-                .addHeader("User-Agent", "Mozilla/5.0")
-                .addHeader("Accept", "text/html")
-                .get()
-                .build()
-            val client = OkHttpClient()
-            client.newCall(captivePortalRequest).execute().use { response ->
-                val captivePortalHTML = response.body?.string()
-                Log.d("handleCaptivePortal", captivePortalHTML.toString())
-                val portalURL: String= extractLoginPortalURL(captivePortalHTML.toString()) ?: "";
-                openLoginPortal(portalURL);
-            }
-        }
-    }
-    fun initiateLogin() {
-        CoroutineScope(Dispatchers.IO).launch {
+
+    fun initiateLogin() : LoginState{
             val generateCaptive= "http://connectivitycheck.gstatic.com/"
             val captivePortalRequest= Request.Builder()
                 .url(generateCaptive)
@@ -54,13 +31,31 @@ class LoginHandler(private val context: LoginService) {
             client.newCall(captivePortalRequest).execute().use { response ->
                 val captivePortalHTML = response.body?.string()
                 Log.d("handleCaptivePortal", captivePortalHTML.toString())
-                val portalURL: String= extractLoginPortalURL(captivePortalHTML.toString()) ?: "";
-                openLoginPortal(portalURL);
+                val portalURL= extractLoginPortalURL(captivePortalHTML.toString());
+                
+                if (portalURL == null) {
+                    return LoginState.CONNECTED;
+                }
+                else {
+                    return openLoginPortal(portalURL)
+                }
             }
+
+    }
+    private fun extractLoginPortalURL(html:String): String? {
+        val regex = """http:\/\/172\.16\.222\.1:1000\/fgtauth\?([a-fA-F0-9]+)""".toRegex()
+        val matchResult = regex.find(html)
+        if (matchResult != null) {
+            val entireUrl = matchResult.value
+            Log.d("getLoginPortalURL", entireUrl)
+            return entireUrl;
+        } else {
+            Log.d("getLoginPortalURL", "No match found")
+            return null
         }
     }
 
-    private fun openLoginPortal(poralUrl: String) {
+    private fun openLoginPortal(poralUrl: String) : LoginState {
         val loginPortalRequest = Request.Builder()
             .url(poralUrl)
             .addHeader("User-Agent", "Mozilla/5.0")
@@ -72,9 +67,9 @@ class LoginHandler(private val context: LoginService) {
         client.newCall(loginPortalRequest).execute().use { response ->
             val loginPortalHTML= response.body?.string()
             Log.d("openLoginPortal", loginPortalHTML.toString())
-            val domainRegex = """http?://([^/]+)""".toRegex();
-            val domain = domainRegex.find(poralUrl);
-            val redirectAndMagic  = extractRedirectAndMagic(domain?.value.toString(), loginPortalHTML.toString());
+            val domainRegex = """http?://([^/]+)""".toRegex()
+            val domain = domainRegex.find(poralUrl)
+            val redirectAndMagic  = extractRedirectAndMagic(domain?.value.toString(), loginPortalHTML.toString())
             if (
                 !redirectAndMagic.get("submit").isNullOrEmpty() &&
                 !redirectAndMagic.get("magic").isNullOrEmpty() &&
@@ -85,12 +80,46 @@ class LoginHandler(private val context: LoginService) {
                 Log.d("openLoginPortal", properties.keys.toString())
                 redirectAndMagic["username"] = properties.getProperty("username")
                 redirectAndMagic["password"] =  properties.getProperty("password")
-                doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic);
+                return doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic)
+            }
+            else {
+                return LoginState.UNKNOWN;
             }
         }
     }
 
-    private fun doLoginRequest(URL: String, map: MutableMap<String, String>) {
+    private fun extractRedirectAndMagic(loginPortalDomain:String, html: String): MutableMap<String, String> {
+        val regex = """<(form|input)[^>]*>""".toRegex()
+        val matches = regex.findAll(html)
+        var matchedTags = ""
+        matches.forEach {
+            matchedTags += it.value
+        }
+        val doc = Jsoup.parse(matchedTags)
+        var res: MutableMap<String, String> = mutableMapOf()
+        val forms = doc.select("form")
+        for (form in forms) {
+            val action = form.attr("action")
+            val method = form.attr("method")
+            val inputs = form.select("input")
+            res["submit"] = loginPortalDomain + action
+            Log.d("extractRedirectAndMagic", "Form action: $action, $method, $inputs")
+            for (input in inputs) {
+                val name = input.attr("name")
+                val value = input.attr("value")
+                if (name == "4Tredir" || name=="magic") {
+                    res[name] = value
+                }
+            }
+
+        }
+        for ((key, value) in res) {
+            Log.d("openLoginPortal", "$key: $value")
+        }
+        return res
+    }
+
+    private fun doLoginRequest(URL: String, map: MutableMap<String, String>) : LoginState {
         val loginPayload = FormBody.Builder()
         for ((key, value) in map) {
             loginPayload.add(key, value)
@@ -103,65 +132,20 @@ class LoginHandler(private val context: LoginService) {
 
         val client = OkHttpClient()
         client.newCall(loginPortalRequest).execute().use { response ->
-            val responseHtml = response.body?.string().toString();
+            val responseHtml = response.body?.string().toString()
             Log.d("DoLoginRequest", responseHtml)
-            val keepaliveURL = extractKeepaliveURL(responseHtml);
+            val keepaliveURL = extractKeepaliveURL(responseHtml)
+            // TODO: analyse the resposne html and return maxconcurrent or authfailed accordingly
             if (keepaliveURL.isNullOrEmpty() && nReTries > 0) {
-                doLoginRequest(URL, map);
+                doLoginRequest(URL, map)
             } else if (nReTries == 0) {
-                exitProcess(1);
+                return LoginState.AUTHFAILED;
             }
             else {
-                openKeepAlive(keepaliveURL.toString());
+                return openKeepAlive(keepaliveURL.toString())
             }
         }
-    }
-
-    private fun openKeepAlive(keepaliveURL: String) {
-        val captivePortalRequest = Request.Builder()
-            .url(keepaliveURL)
-            .addHeader("User-Agent", "Mozilla/5.0")
-            .addHeader("Accept", "text/html")
-            .get()
-            .build()
-        val client = OkHttpClient()
-        client.newCall(captivePortalRequest).execute().use { response ->
-            if (response.code == 200) {
-                context.sendNotification("WiFi Auto Login", "Logged in successfully");
-            }
-            val captivePortalHTML = response.body?.string()
-            Log.d("handleCaptivePortal", captivePortalHTML.toString())
-        }
-    }
-    private fun extractRedirectAndMagic(loginPortalDomain:String, html: String): MutableMap<String, String> {
-        val regex = """<(form|input)[^>]*>""".toRegex()
-        val matches = regex.findAll(html)
-        var matchedTags = "";
-        matches.forEach {
-            matchedTags += it.value
-        }
-        val doc = Jsoup.parse(matchedTags);
-        var res: MutableMap<String, String> = mutableMapOf()
-        val forms = doc.select("form");
-        for (form in forms) {
-            val action = form.attr("action")
-            val method = form.attr("method")
-            val inputs = form.select("input")
-            res["submit"] = loginPortalDomain + action;
-            Log.d("extractRedirectAndMagic", "Form action: $action, $method, $inputs")
-            for (input in inputs) {
-                val name = input.attr("name")
-                val value = input.attr("value")
-                if (name == "4Tredir" || name=="magic") {
-                    res[name] = value;
-                }
-            }
-
-        }
-        for ((key, value) in res) {
-            Log.d("openLoginPortal", "$key: $value")
-        }
-        return res
+        return LoginState.UNKNOWN;
     }
 
     private fun extractKeepaliveURL(html: String): String? {
@@ -177,16 +161,22 @@ class LoginHandler(private val context: LoginService) {
         }
     }
 
-    private fun extractLoginPortalURL(html:String): String? {
-        val regex = """http:\/\/172\.16\.222\.1:1000\/fgtauth\?([a-fA-F0-9]+)""".toRegex()
-        val matchResult = regex.find(html)
-        if (matchResult != null) {
-            val entireUrl = matchResult.value
-            Log.d("getLoginPortalURL", entireUrl)
-            return entireUrl;
-        } else {
-            Log.d("getLoginPortalURL", "No match found")
-            return null
+    private fun openKeepAlive(keepaliveURL: String) : LoginState {
+        val captivePortalRequest = Request.Builder()
+            .url(keepaliveURL)
+            .addHeader("User-Agent", "Mozilla/5.0")
+            .addHeader("Accept", "text/html")
+            .get()
+            .build()
+        val client = OkHttpClient()
+        client.newCall(captivePortalRequest).execute().use { response ->
+            if (response.code == 200) {
+                return LoginState.LOGGEDIN
+            }
+            val captivePortalHTML = response.body?.string()
+            // TODO: add a auth successfull check here and return unknown state if failed
+            Log.d("handleCaptivePortal", captivePortalHTML.toString())
+            return LoginState.LOGGEDIN
         }
     }
 }

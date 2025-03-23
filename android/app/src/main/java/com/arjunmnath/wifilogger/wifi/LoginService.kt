@@ -3,55 +3,91 @@ package com.arjunmnath.wifilogger.wifi
 import android.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.logging.Logger
 
 class LoginService : Service() {
-    private val nReTries = 3;
-    val channelId = "wifi_auto_login_channel"
+    private val channelId = "wifi_login_channel"
+    private val notificationId = 1
+    private lateinit var notificationManager: NotificationManager
+    private lateinit var notificationBuilder: NotificationCompat.Builder
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Logger.getLogger("WifiLoginService").info("Service started")
-        var handler: LoginHandler = LoginHandler(this);
-        handler.initiateLogin();
+        CoroutineScope(Dispatchers.IO).launch {
+            var handler: LoginHandler = LoginHandler(this@LoginService);
+            val state = handler.initiateLogin();
+            Logger.getLogger("WifiLoginService").info(state.toString())
+            if (state == LoginState.CONNECTED) {
+                updateNotification("Connected to WiFi")
+                initiateLogoutTimer()
+            }
+            else if (state == LoginState.LOGGEDIN) {
+                updateNotification("Logged in to WiFi")
+                initiateLogoutTimer()
+            }
+        }
         return START_STICKY
     }
 
     override fun onCreate() {
         super.onCreate()
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("WiFi Login Running")
-            .setContentText("Your WiFi auto-login service is active.")
-            .setSmallIcon(R.drawable.ic_secure)
-            .build()
-        startForeground(1, notification)
         createNotificationChannel()
+
+        notificationManager = getSystemService(NotificationManager::class.java)
+        notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("WiFi Login Running")
+            .setContentText("Initializing WiFi auto-login...")
+            .setSmallIcon(R.drawable.ic_secure)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        startForeground(notificationId, notificationBuilder.build())
     }
 
+    private fun initiateLogoutTimer() {
+        serviceScope.launch {
+            for (i in 10700 downTo 0) {
+                updateNotification("Time remaining on network $i seconds...");
+                delay(1000);
+            }
+        }
+    }
 
-    fun createNotificationChannel() {
+    private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelName = "Wifi Auto Login"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, channelName, importance)
-            val notificationManager = getSystemService(NotificationManager::class.java)
+            val channel = NotificationChannel(
+                channelId,
+                "WiFi Auto Login",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
     }
 
-    internal fun sendNotification(title: String, message: String) {
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setSmallIcon(R.drawable.stat_notify_chat)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .build()
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(1001, notification)
+    private fun updateNotification(message: String) {
+        val logout = Intent(this, NotificationActionReceiver::class.java).apply {
+            action = "LOGOUT"
+        }
+        val logoutPendingIntent = PendingIntent.getBroadcast(this, 0, logout, PendingIntent.FLAG_IMMUTABLE)
+        notificationBuilder.clearActions();
+        notificationBuilder.setContentText(message)
+        notificationBuilder.addAction(R.drawable.ic_secure, "Logout", logoutPendingIntent)
+        notificationManager.notify(notificationId, notificationBuilder.build())
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
     }
     override fun onBind(intent: Intent?): IBinder? = null
 }

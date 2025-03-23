@@ -18,6 +18,7 @@ import com.arjunmnath.wifilogger.wifi.StateChangeReceiver
 import java.util.concurrent.TimeUnit
 import android.Manifest
 class MainActivity : ComponentActivity() {
+    private lateinit var stateChangeReceiver: StateChangeReceiver
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 100
     }
@@ -31,9 +32,9 @@ class MainActivity : ComponentActivity() {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
         }
         val request = PeriodicWorkRequestBuilder<LoginWorker>(3, TimeUnit.HOURS).build()
-        val receiver = StateChangeReceiver()
+        stateChangeReceiver = StateChangeReceiver()
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        registerReceiver(receiver, filter)
+        registerReceiver(stateChangeReceiver, filter)
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "wifi_auto_login",
             ExistingPeriodicWorkPolicy.REPLACE,
@@ -58,5 +59,9 @@ class MainActivity : ComponentActivity() {
                 Log.d("MainActivity", "Location permission denied")
             }
         }
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(stateChangeReceiver)
     }
 }
