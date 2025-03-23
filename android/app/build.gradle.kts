@@ -58,4 +58,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.okhttp)
     implementation(libs.jsoup)
+    implementation("androidx.core:core-ktx:1.9.0")
 }

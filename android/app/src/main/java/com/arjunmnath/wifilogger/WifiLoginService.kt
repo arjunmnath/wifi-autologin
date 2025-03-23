@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
@@ -18,21 +17,23 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.logging.Logger
 import org.jsoup.Jsoup
-import java.util.Locale
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 import java.util.Properties
+import kotlin.system.exitProcess
 
 class WifiLoginService  : Service() {
+    private val nReTries = 3;
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Logger.getLogger("WifiLoginService").info("Service started")
         startForeground(1, createNotification())
-        handleCaptivePortal()
+        initiateLogin()
         return START_STICKY
     }
 
     private fun createNotification(): Notification {
+
         val channelId = "wifi_login_channel"
         val notificationManager = getSystemService(NotificationManager::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -51,9 +52,9 @@ class WifiLoginService  : Service() {
             .build()
     }
 
-    private fun handleCaptivePortal() {
+    private fun initiateLogin() {
         CoroutineScope(Dispatchers.IO).launch {
-            val generateCaptive= "http://connectivitycheck.gstatic.com/"  // Replace with actual portal URL
+            val generateCaptive= "http://connectivitycheck.gstatic.com/"
             val captivePortalRequest= Request.Builder()
                 .url(generateCaptive)
                 .addHeader("User-Agent", "Mozilla/5.0")
@@ -65,7 +66,7 @@ class WifiLoginService  : Service() {
             client.newCall(captivePortalRequest).execute().use { response ->
                 val captivePortalHTML = response.body?.string()
                 Log.d("handleCaptivePortal", captivePortalHTML.toString())
-                val portalURL: String= getLoginPortalURL(captivePortalHTML.toString()) ?: "";
+                val portalURL: String= extractLoginPortalURL(captivePortalHTML.toString()) ?: "";
                 openLoginPortal(portalURL);
             }
         }
@@ -91,10 +92,9 @@ class WifiLoginService  : Service() {
                 !redirectAndMagic.get("magic").isNullOrEmpty() &&
                 !redirectAndMagic.get("4Tredir").isNullOrEmpty()) {
                 val properties = Properties().apply {
-                    resources.openRawResource(R.raw.config);
+                    resources.openRawResource(R.raw.config).use { load(it) }
                 }
-                val apiKey = properties.getProperty("api_key")
-                println(apiKey)
+                Log.d("openLoginPortal", properties.keys.toString())
                 redirectAndMagic["username"] = properties.getProperty("username")
                 redirectAndMagic["password"] =  properties.getProperty("password")
                 doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic);
@@ -115,10 +115,24 @@ class WifiLoginService  : Service() {
 
         val client = OkHttpClient()
         client.newCall(loginPortalRequest).execute().use { response ->
+            val responseHtml = response.body?.string().toString();
             Log.d("DoLoginRequest", response.body?.string().toString())
+            val keepaliveURL = extractKeepaliveURL(responseHtml);
+
+            if (keepaliveURL.isNullOrEmpty() && nReTries > 0) {
+               doLoginRequest(URL, map);
+            } else if (nReTries == 0) {
+                exitProcess(1);
+            }
+            else {
+               openKeepAlive(keepaliveURL.toString());
+            }
         }
     }
 
+    private fun openKeepAlive(keepaliveURL: String) {
+
+    }
     private fun extractRedirectAndMagic(loginPortalDomain:String, html: String): MutableMap<String, String> {
         val regex = """<(form|input)[^>]*>""".toRegex()
         val matches = regex.findAll(html)
@@ -149,7 +163,21 @@ class WifiLoginService  : Service() {
         }
         return res
     }
-    private fun getLoginPortalURL(html:String): String? {
+
+    private fun extractKeepaliveURL(html: String): String? {
+        val regex = """http:\/\/172\.16\.222\.1:1000\/keepalive\?([a-fA-F0-9]+)""".toRegex()
+        val matchResult = regex.find(html)
+        if (matchResult != null) {
+            val entireUrl = matchResult.value
+            Log.d("extractKeepaliveURL", entireUrl)
+            return entireUrl;
+        } else {
+            Log.d("extractKeepaliveURL", "No match found")
+            return null
+        }
+    }
+
+    private fun extractLoginPortalURL(html:String): String? {
         val regex = """http:\/\/172\.16\.222\.1:1000\/fgtauth\?([a-fA-F0-9]+)""".toRegex()
         val matchResult = regex.find(html)
         if (matchResult != null) {
