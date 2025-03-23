@@ -3,9 +3,8 @@ package com.arjunmnath.wifilogger.wifi
 import android.content.ContextWrapper
 import android.util.Log
 import com.arjunmnath.wifilogger.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import android.content.Context
+import android.content.SharedPreferences
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,7 +12,7 @@ import org.jsoup.Jsoup
 import java.util.Properties
 import kotlin.collections.iterator
 
-enum class LoginState{ CONNECTED, LOGGEDIN, MAXCONCURRENT, AUTHFAILED, UNKNOWN }
+enum class LoginState{ CONNECTED, LOGGEDIN, MAXCONCURRENT, AUTHFAILED, UNKNOWN, CREDUNAVAILABLE }
 
 
 class LoginHandler(private val context: LoginService) {
@@ -74,12 +73,21 @@ class LoginHandler(private val context: LoginService) {
                 !redirectAndMagic.get("submit").isNullOrEmpty() &&
                 !redirectAndMagic.get("magic").isNullOrEmpty() &&
                 !redirectAndMagic.get("4Tredir").isNullOrEmpty()) {
+
+
+//                val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
+//                val username = sharedPreferences.getString("username", "")
+//                val password = sharedPreferences.getString("password", "")
+//                if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
+//                    return LoginState.CREDUNAVAILABLE
+//                }
                 val properties = Properties().apply {
                     ContextWrapper(context).resources.openRawResource(R.raw.config).use { load(it) }
                 }
-                Log.d("openLoginPortal", properties.keys.toString())
-                redirectAndMagic["username"] = properties.getProperty("username")
-                redirectAndMagic["password"] =  properties.getProperty("password")
+                val username = properties.getProperty("username")
+                val password = properties.getProperty("password")
+                redirectAndMagic["username"] = username
+                redirectAndMagic["password"] = password
                 return doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic)
             }
             else {
