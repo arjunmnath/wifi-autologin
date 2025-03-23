@@ -22,7 +22,7 @@ import java.util.Locale
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
-
+import java.util.Properties
 
 class WifiLoginService  : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -90,8 +90,13 @@ class WifiLoginService  : Service() {
                 !redirectAndMagic.get("submit").isNullOrEmpty() &&
                 !redirectAndMagic.get("magic").isNullOrEmpty() &&
                 !redirectAndMagic.get("4Tredir").isNullOrEmpty()) {
-                redirectAndMagic["username"] = "<>"
-                redirectAndMagic["password"] = "<>"
+                val properties = Properties().apply {
+                    resources.openRawResource(R.raw.config);
+                }
+                val apiKey = properties.getProperty("api_key")
+                println(apiKey)
+                redirectAndMagic["username"] = properties.getProperty("username")
+                redirectAndMagic["password"] =  properties.getProperty("password")
                 doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic);
             }
         }
