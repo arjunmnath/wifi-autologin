@@ -44,7 +44,6 @@
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".wifi.NotificationActionReceiver" />
         <service
             android:name=".wifi.AutoLoginTile"
             android:exported="true"
@@ -52,6 +51,9 @@
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TILE_LABEL"
+                android:value="Wifi Auto Login" />
         </service>
     </application>
 

@@ -31,15 +31,11 @@ class MainActivity : ComponentActivity() {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
         }
-        val request = PeriodicWorkRequestBuilder<LoginWorker>(3, TimeUnit.HOURS).build()
+        val request = PeriodicWorkRequestBuilder<LoginWorker>(1, TimeUnit.HOURS).build()
         stateChangeReceiver = StateChangeReceiver()
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(stateChangeReceiver, filter)
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "wifi_auto_login",
-            ExistingPeriodicWorkPolicy.REPLACE,
-            request
-        )
+        WorkManager.getInstance(this).enqueue(request);
         startButton.setOnClickListener {
             val serviceIntent = Intent(this, LoginService::class.java)
             serviceIntent.action = LoginService.ACTION_LOGIN

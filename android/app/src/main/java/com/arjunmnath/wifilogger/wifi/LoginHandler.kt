@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
@@ -195,8 +196,8 @@ class LoginHandler(private val context: LoginService) {
         }
 
 
-        fun initiateLogout() {
-            CoroutineScope(Dispatchers.IO).launch {
+        suspend fun initiateLogout(): LoginState{
+            //  handle sockettimeotuexcpetion
                 val generateLogout = "http://172.16.222.1:1000/logout?"
                 val captivePortalRequest = Request.Builder()
                     .url(generateLogout)
@@ -210,7 +211,7 @@ class LoginHandler(private val context: LoginService) {
                     val isLoggedOut = extractSuccess(logoutPageHtml.toString())
                     Log.d("initiateLogout", isLoggedOut.toString())
                 }
-            }
+                return checkLoginStatus()
         }
 
 

@@ -40,11 +40,32 @@ class LoginService : Service() {
         Logger.getLogger("WifiLoginService").info("Service started")
         when (intent?.action) {
             ACTION_RETRY -> loginAction(this)
-            ACTION_LOGIN -> loginAction(this);
+            ACTION_LOGIN -> loginAction(this)
+            ACTION_LOGOUT -> logoutAction(this)
         }
         return START_STICKY
     }
 
+    private fun logoutAction(context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val state = LoginHandler.initiateLogout()
+            if (state == LoginState.LOGGEDOUT) {
+                updateNotification(
+                    title = "Logged out",
+                    message = "You have been logged out",
+                    onGoing = false,
+                    indents = arrayOf(
+                        NotificationAction(
+                            title = "login",
+                            drawable = R.drawable.ic_secure,
+                            intent = getRetryIntend()
+                        )
+                    )
+                )
+            }
+        }
+
+    }
     private fun loginAction(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             var handler = LoginHandler(this@LoginService)

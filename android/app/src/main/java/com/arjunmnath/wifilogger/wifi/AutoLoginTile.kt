@@ -25,17 +25,18 @@ class AutoLoginTile: TileService() {
     }
     override fun onTileAdded() {
         // Called when the user adds the tile to Quick Settings
-        qsTile.icon = Icon.createWithResource(this, android.R.drawable.ic_menu_mapmode)
+        qsTile.icon = Icon.createWithResource(this, com.arjunmnath.wifilogger.R.drawable.star_icon)
         qsTile.state = Tile.STATE_ACTIVE
         updateTile()
     }
 
     override fun onClick() {
         val serviceIntent = Intent(this, LoginService::class.java)
+        serviceIntent.action = LoginService.ACTION_LOGIN
         if (isServiceRunning(this, LoginService::class.java)) {
             stopService(serviceIntent)
         } else {
-//            startForegroundService(serviceIntent)
+            startForegroundService(serviceIntent)
         }
         updateTile()
     }
@@ -70,6 +71,7 @@ class AutoLoginTile: TileService() {
     }
     private fun updateTile() {
         val tile = qsTile
+        qsTile.label = "Auto Wifi Login"
         if (isServiceRunning(this, LoginService::class.java)) {
             Log.d("AutoLoginTile", "Service is running");
             tile.state = Tile.STATE_ACTIVE
