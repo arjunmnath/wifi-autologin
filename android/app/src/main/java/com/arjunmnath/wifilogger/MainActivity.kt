@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
         )
         startButton.setOnClickListener {
             val serviceIntent = Intent(this, LoginService::class.java)
+            serviceIntent.action = LoginService.ACTION_LOGIN
             startService(serviceIntent)
         }
 

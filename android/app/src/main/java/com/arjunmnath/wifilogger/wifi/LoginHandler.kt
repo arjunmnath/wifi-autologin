@@ -5,20 +5,30 @@ import android.util.Log
 import com.arjunmnath.wifilogger.R
 import android.content.Context
 import android.content.SharedPreferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
+import java.io.IOException
 import java.util.Properties
 import kotlin.collections.iterator
 
-enum class LoginState{ CONNECTED, LOGGEDIN, MAXCONCURRENT, AUTHFAILED, UNKNOWN, CREDUNAVAILABLE }
+enum class LoginState { CONNECTED, LOGGEDIN, LOGGEDOUT, MAXCONCURRENT, AUTHFAILED, UNKNOWN, CREDUNAVAILABLE }
 
 
 class LoginHandler(private val context: LoginService) {
     private var nReTries = 3;
-
-    fun initiateLogin() : LoginState{
+    // TODO: wont work if connected to vpns
+    // TODO: IOEXception not catching (unexpected end of stream) (caused function unknwon)
+    // TODO: captive portal not responding
+    suspend fun initiateLogin() : LoginState{
+            val state = checkLoginStatus();
+            if (state == LoginState.LOGGEDIN) {
+                return state;
+            }
             val generateCaptive= "http://connectivitycheck.gstatic.com/"
             val captivePortalRequest= Request.Builder()
                 .url(generateCaptive)
@@ -26,6 +36,7 @@ class LoginHandler(private val context: LoginService) {
                 .addHeader("Accept", "text/html")
                 .get()
                 .build()
+            Log.d("handleCaptivePortal", "Captive portal request sent")
             val client = OkHttpClient()
             client.newCall(captivePortalRequest).execute().use { response ->
                 val captivePortalHTML = response.body?.string()
@@ -54,7 +65,7 @@ class LoginHandler(private val context: LoginService) {
         }
     }
 
-    private fun openLoginPortal(poralUrl: String) : LoginState {
+    private suspend fun openLoginPortal(poralUrl: String) : LoginState {
         val loginPortalRequest = Request.Builder()
             .url(poralUrl)
             .addHeader("User-Agent", "Mozilla/5.0")
@@ -73,8 +84,6 @@ class LoginHandler(private val context: LoginService) {
                 !redirectAndMagic.get("submit").isNullOrEmpty() &&
                 !redirectAndMagic.get("magic").isNullOrEmpty() &&
                 !redirectAndMagic.get("4Tredir").isNullOrEmpty()) {
-
-
 //                val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
 //                val username = sharedPreferences.getString("username", "")
 //                val password = sharedPreferences.getString("password", "")
@@ -95,7 +104,6 @@ class LoginHandler(private val context: LoginService) {
             }
         }
     }
-
     private fun extractRedirectAndMagic(loginPortalDomain:String, html: String): MutableMap<String, String> {
         val regex = """<(form|input)[^>]*>""".toRegex()
         val matches = regex.findAll(html)
@@ -127,7 +135,7 @@ class LoginHandler(private val context: LoginService) {
         return res
     }
 
-    private fun doLoginRequest(URL: String, map: MutableMap<String, String>) : LoginState {
+    private suspend fun doLoginRequest(URL: String, map: MutableMap<String, String>) : LoginState {
         val loginPayload = FormBody.Builder()
         for ((key, value) in map) {
             loginPayload.add(key, value)
@@ -141,50 +149,90 @@ class LoginHandler(private val context: LoginService) {
         val client = OkHttpClient()
         client.newCall(loginPortalRequest).execute().use { response ->
             val responseHtml = response.body?.string().toString()
-            Log.d("DoLoginRequest", responseHtml)
-            val keepaliveURL = extractKeepaliveURL(responseHtml)
-            // TODO: analyse the resposne html and return maxconcurrent or authfailed accordingly
-            if (keepaliveURL.isNullOrEmpty() && nReTries > 0) {
+            val status = extractLoginFailedState(responseHtml);
+            Log.d("DoLoginRequest", status.toString())
+            return status
+            if (status == LoginState.UNKNOWN && nReTries > 0) {
                 doLoginRequest(URL, map)
             } else if (nReTries == 0) {
                 return LoginState.AUTHFAILED;
             }
             else {
-                return openKeepAlive(keepaliveURL.toString())
+                  return status;
             }
         }
         return LoginState.UNKNOWN;
     }
 
-    private fun extractKeepaliveURL(html: String): String? {
-        val regex = """http:\/\/172\.16\.222\.1:1000\/keepalive\?([a-fA-F0-9]+)""".toRegex()
-        val matchResult = regex.find(html)
-        if (matchResult != null) {
-            val entireUrl = matchResult.value
-            Log.d("extractKeepaliveURL", entireUrl)
-            return entireUrl;
-        } else {
-            Log.d("extractKeepaliveURL", "No match found")
-            return null
+    private fun extractLoginFailedState(html: String) : LoginState {
+        Log.d("ExtractLoginStatus", html)
+        var maxConcurrentRegex = """Sorry, user&apos;s concurrent authentication is over limit""".toRegex()
+        var authFailedRegex = """Firewall authentication failed. Please try again.""".toRegex()
+        var successRegex  = """"http://172.16.222.1:1000/keepalive\?""".toRegex()
+        if (successRegex.containsMatchIn(html)) {
+            return LoginState.LOGGEDIN;
         }
+        else if (maxConcurrentRegex.containsMatchIn(html)) {
+            return LoginState.MAXCONCURRENT;
+        }
+        else if (authFailedRegex.containsMatchIn(html)) {
+            return LoginState.AUTHFAILED;
+        }
+        return LoginState.UNKNOWN;
     }
 
-    private fun openKeepAlive(keepaliveURL: String) : LoginState {
-        val captivePortalRequest = Request.Builder()
-            .url(keepaliveURL)
-            .addHeader("User-Agent", "Mozilla/5.0")
-            .addHeader("Accept", "text/html")
-            .get()
-            .build()
-        val client = OkHttpClient()
-        client.newCall(captivePortalRequest).execute().use { response ->
-            if (response.code == 200) {
-                return LoginState.LOGGEDIN
+    companion object {
+        private fun extractLoginStatus(html: String): Boolean {
+            val regex = """Firewall Authentication Keepalive Window""".toRegex()
+            val matchResult = regex.find(html)
+            return matchResult != null
+        }
+
+        private fun extractSuccess(html: String): Boolean {
+            val regex = """You have successfully logged out""".toRegex()
+            val matchResult = regex.find(html)
+            return matchResult != null
+        }
+
+
+        fun initiateLogout() {
+            CoroutineScope(Dispatchers.IO).launch {
+                val generateLogout = "http://172.16.222.1:1000/logout?"
+                val captivePortalRequest = Request.Builder()
+                    .url(generateLogout)
+                    .addHeader("User-Agent", "Mozilla/5.0")
+                    .addHeader("Accept", "text/html")
+                    .get()
+                    .build()
+                val client = OkHttpClient()
+                client.newCall(captivePortalRequest).execute().use { response ->
+                    val logoutPageHtml = response.body?.string()
+                    val isLoggedOut = extractSuccess(logoutPageHtml.toString())
+                    Log.d("initiateLogout", isLoggedOut.toString())
+                }
             }
-            val captivePortalHTML = response.body?.string()
-            // TODO: add a auth successfull check here and return unknown state if failed
-            Log.d("handleCaptivePortal", captivePortalHTML.toString())
-            return LoginState.LOGGEDIN
+        }
+
+
+        internal suspend fun checkLoginStatus(): LoginState {
+            try {
+                val generateLogout = "http://172.16.222.1:1000/keepalive?"
+                val captivePortalRequest = Request.Builder()
+                    .url(generateLogout)
+                    .addHeader("User-Agent", "Mozilla/5.0")
+                    .addHeader("Accept", "text/html")
+                    .get()
+                    .build()
+                val client = OkHttpClient()
+                client.newCall(captivePortalRequest).execute().use { response ->
+                    val logoutPageHtml = response.body?.string()
+                    if (extractLoginStatus(logoutPageHtml.toString()))
+                        return LoginState.LOGGEDIN
+                }
+            } catch (e: IOException) {
+                return LoginState.LOGGEDOUT
+            }
+            return LoginState.UNKNOWN;
         }
     }
 }
