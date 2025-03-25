@@ -1,6 +1,5 @@
 package com.arjunmnath.wifilogger.wifi
 
-import android.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -29,7 +28,10 @@ class NotificationAction {
 }
 
 class LoginService : Service() {
+    // TODO: logout timer not resetting
+    // TODO: on wifi off state, stop the service, restart when wifi is turned on
     private val channelId = "wifi_login_channel"
+    private val logoutInterval = 10800;
     private val notificationId = 1
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationBuilder: NotificationCompat.Builder
@@ -39,14 +41,15 @@ class LoginService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Logger.getLogger("WifiLoginService").info("Service started")
         when (intent?.action) {
-            ACTION_RETRY -> loginAction(this)
-            ACTION_LOGIN -> loginAction(this)
+            ACTION_RETRY -> loginAction()
+            ACTION_LOGIN -> loginAction()
             ACTION_LOGOUT -> logoutAction(this)
         }
         return START_STICKY
     }
 
     private fun logoutAction(context: Context) {
+        // todo: failed to update the notification fix it
         CoroutineScope(Dispatchers.IO).launch {
             val state = LoginHandler.initiateLogout()
             if (state == LoginState.LOGGEDOUT) {
@@ -57,7 +60,7 @@ class LoginService : Service() {
                     indents = arrayOf(
                         NotificationAction(
                             title = "login",
-                            drawable = R.drawable.ic_secure,
+                            drawable = android.R.drawable.ic_secure,
                             intent = getRetryIntend()
                         )
                     )
@@ -66,7 +69,7 @@ class LoginService : Service() {
         }
 
     }
-    private fun loginAction(context: Context) {
+    private fun loginAction() {
         CoroutineScope(Dispatchers.IO).launch {
             var handler = LoginHandler(this@LoginService)
             val state = handler.initiateLogin()
@@ -133,13 +136,13 @@ class LoginService : Service() {
         notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle("WiFi Login Running")
             .setContentText("Initializing WiFi auto-login...")
-            .setSmallIcon(R.drawable.ic_secure)
+            .setSmallIcon(android.R.drawable.ic_secure)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         startForeground(notificationId, notificationBuilder.build())
     }
     private fun initSuccessNotification() {
         serviceScope.launch {
-            for (i in 10700 downTo 0) {
+            for (i in logoutInterval downTo 0) {
                 updateNotification(
                     title = "Logged in to WiFi",
                     message = "Time remaining on network $i seconds...",

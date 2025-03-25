@@ -25,17 +25,28 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        val startButton: Button = findViewById(R.id.startButton)
-        val stopButton: Button = findViewById(R.id.stopButton)
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
-        }
-        val request = PeriodicWorkRequestBuilder<LoginWorker>(1, TimeUnit.HOURS).build()
+
+        // register wifi state change receiver
         stateChangeReceiver = StateChangeReceiver()
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(stateChangeReceiver, filter)
+
+        // set opening page
+        setContentView(R.layout.activity_main)
+        val startButton: Button = findViewById(R.id.startButton)
+        val stopButton: Button = findViewById(R.id.stopButton)
+
+
+        // request location permission (needed to obtain the wifi ssid in stateChangeReceiver)
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+        }
+
+        // register worker (starts the service if not running)
+        val request = PeriodicWorkRequestBuilder<LoginWorker>(1, TimeUnit.HOURS).build()
         WorkManager.getInstance(this).enqueue(request);
+
+        // start and stop buttons action assignments
         startButton.setOnClickListener {
             val serviceIntent = Intent(this, LoginService::class.java)
             serviceIntent.action = LoginService.ACTION_LOGIN
