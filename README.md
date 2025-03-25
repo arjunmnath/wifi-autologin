@@ -95,7 +95,7 @@ For platform-specific builds, refer to the documentation in each subfolder.
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions are welcome! Please read our [Contributions Guide](CONTRIBUTING.md) before submitting a pull request. If you encounter any issues, feel free to open an issue in the repository.
 
 ## Acknowledgments
 Special thanks to the open-source community for inspiration and resources.
