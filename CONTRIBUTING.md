@@ -5,12 +5,12 @@ Thank you for your interest in contributing to **WiFi AutoLogin**! We welcome co
 ## How to Contribute
 
 ### 1. Fork the Repository
-1. Navigate to the [WiFi AutoLogin GitHub repository](https://github.com/yourusername/wifi-autologin).
+1. Navigate to the [WiFi AutoLogin GitHub repository](https://github.com/arjunmnath/wifi-autologin).
 2. Click the **Fork** button to create a copy in your own GitHub account.
 
 ### 2. Clone the Repository
 ```sh
-git clone https://github.com/yourusername/wifi-autologin.git
+git clone https://github.com/arjunmnath/wifi-autologin.git
 cd wifi-autologin
 ```
 
@@ -43,7 +43,7 @@ git push origin feature-name
 
 ## Reporting Issues
 If you encounter bugs or have feature suggestions, please open an issue:
-1. Go to the [Issues](https://github.com/yourusername/wifi-autologin/issues) tab.
+1. Go to the [Issues](https://github.com/arjunmnath/wifi-autologin/issues) tab.
 2. Click **New Issue** and provide a detailed description.
 
 ## Code of Conduct
