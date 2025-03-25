@@ -1,6 +1,6 @@
 //
-//  auto_wifi_loginApp.swift
-//  auto-wifi-login
+//  wifiloginApp.swift
+//  wifilogin
 //
 //  Created by Arjun Manjunath on 25/03/25.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct auto_wifi_loginApp: App {
+struct wifiloginApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,

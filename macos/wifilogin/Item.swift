@@ -1,6 +1,6 @@
 //
 //  Item.swift
-//  auto-wifi-login
+//  wifilogin
 //
 //  Created by Arjun Manjunath on 25/03/25.
 //

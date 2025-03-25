@@ -7,62 +7,62 @@
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
-		74D0CDA22D927AF500CDD6EC /* PBXContainerItemProxy */ = {
+		74D0CDFF2D927C0200CDD6EC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 74D0CD862D927AF300CDD6EC /* Project object */;
+			containerPortal = 74D0CDE32D927C0000CDD6EC /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 74D0CD8D2D927AF300CDD6EC;
-			remoteInfo = "auto-wifi-login";
+			remoteGlobalIDString = 74D0CDEA2D927C0000CDD6EC;
+			remoteInfo = wifilogin;
 		};
-		74D0CDAC2D927AF500CDD6EC /* PBXContainerItemProxy */ = {
+		74D0CE092D927C0200CDD6EC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 74D0CD862D927AF300CDD6EC /* Project object */;
+			containerPortal = 74D0CDE32D927C0000CDD6EC /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 74D0CD8D2D927AF300CDD6EC;
-			remoteInfo = "auto-wifi-login";
+			remoteGlobalIDString = 74D0CDEA2D927C0000CDD6EC;
+			remoteInfo = wifilogin;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		74D0CD8E2D927AF300CDD6EC /* auto-wifi-login.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "auto-wifi-login.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		74D0CDA12D927AF500CDD6EC /* auto-wifi-loginTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "auto-wifi-loginTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		74D0CDAB2D927AF500CDD6EC /* auto-wifi-loginUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "auto-wifi-loginUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		74D0CDEB2D927C0000CDD6EC /* wifilogin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wifilogin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		74D0CDFE2D927C0200CDD6EC /* wifiloginTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wifiloginTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		74D0CE082D927C0200CDD6EC /* wifiloginUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wifiloginUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		74D0CD902D927AF300CDD6EC /* auto-wifi-login */ = {
+		74D0CDED2D927C0000CDD6EC /* wifilogin */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "auto-wifi-login";
+			path = wifilogin;
 			sourceTree = "<group>";
 		};
-		74D0CDA42D927AF500CDD6EC /* auto-wifi-loginTests */ = {
+		74D0CE012D927C0200CDD6EC /* wifiloginTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "auto-wifi-loginTests";
+			path = wifiloginTests;
 			sourceTree = "<group>";
 		};
-		74D0CDAE2D927AF500CDD6EC /* auto-wifi-loginUITests */ = {
+		74D0CE0B2D927C0200CDD6EC /* wifiloginUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "auto-wifi-loginUITests";
+			path = wifiloginUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		74D0CD8B2D927AF300CDD6EC /* Frameworks */ = {
+		74D0CDE82D927C0000CDD6EC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		74D0CD9E2D927AF500CDD6EC /* Frameworks */ = {
+		74D0CDFB2D927C0200CDD6EC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		74D0CDA82D927AF500CDD6EC /* Frameworks */ = {
+		74D0CE052D927C0200CDD6EC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -72,22 +72,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		74D0CD852D927AF300CDD6EC = {
+		74D0CDE22D927C0000CDD6EC = {
 			isa = PBXGroup;
 			children = (
-				74D0CD902D927AF300CDD6EC /* auto-wifi-login */,
-				74D0CDA42D927AF500CDD6EC /* auto-wifi-loginTests */,
-				74D0CDAE2D927AF500CDD6EC /* auto-wifi-loginUITests */,
-				74D0CD8F2D927AF300CDD6EC /* Products */,
+				74D0CDED2D927C0000CDD6EC /* wifilogin */,
+				74D0CE012D927C0200CDD6EC /* wifiloginTests */,
+				74D0CE0B2D927C0200CDD6EC /* wifiloginUITests */,
+				74D0CDEC2D927C0000CDD6EC /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		74D0CD8F2D927AF300CDD6EC /* Products */ = {
+		74D0CDEC2D927C0000CDD6EC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				74D0CD8E2D927AF300CDD6EC /* auto-wifi-login.app */,
-				74D0CDA12D927AF500CDD6EC /* auto-wifi-loginTests.xctest */,
-				74D0CDAB2D927AF500CDD6EC /* auto-wifi-loginUITests.xctest */,
+				74D0CDEB2D927C0000CDD6EC /* wifilogin.app */,
+				74D0CDFE2D927C0200CDD6EC /* wifiloginTests.xctest */,
+				74D0CE082D927C0200CDD6EC /* wifiloginUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,134 +95,134 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		74D0CD8D2D927AF300CDD6EC /* auto-wifi-login */ = {
+		74D0CDEA2D927C0000CDD6EC /* wifilogin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 74D0CDB52D927AF500CDD6EC /* Build configuration list for PBXNativeTarget "auto-wifi-login" */;
+			buildConfigurationList = 74D0CE122D927C0200CDD6EC /* Build configuration list for PBXNativeTarget "wifilogin" */;
 			buildPhases = (
-				74D0CD8A2D927AF300CDD6EC /* Sources */,
-				74D0CD8B2D927AF300CDD6EC /* Frameworks */,
-				74D0CD8C2D927AF300CDD6EC /* Resources */,
+				74D0CDE72D927C0000CDD6EC /* Sources */,
+				74D0CDE82D927C0000CDD6EC /* Frameworks */,
+				74D0CDE92D927C0000CDD6EC /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				74D0CD902D927AF300CDD6EC /* auto-wifi-login */,
+				74D0CDED2D927C0000CDD6EC /* wifilogin */,
 			);
-			name = "auto-wifi-login";
+			name = wifilogin;
 			packageProductDependencies = (
 			);
-			productName = "auto-wifi-login";
-			productReference = 74D0CD8E2D927AF300CDD6EC /* auto-wifi-login.app */;
+			productName = wifilogin;
+			productReference = 74D0CDEB2D927C0000CDD6EC /* wifilogin.app */;
 			productType = "com.apple.product-type.application";
 		};
-		74D0CDA02D927AF500CDD6EC /* auto-wifi-loginTests */ = {
+		74D0CDFD2D927C0200CDD6EC /* wifiloginTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 74D0CDB82D927AF500CDD6EC /* Build configuration list for PBXNativeTarget "auto-wifi-loginTests" */;
+			buildConfigurationList = 74D0CE152D927C0200CDD6EC /* Build configuration list for PBXNativeTarget "wifiloginTests" */;
 			buildPhases = (
-				74D0CD9D2D927AF500CDD6EC /* Sources */,
-				74D0CD9E2D927AF500CDD6EC /* Frameworks */,
-				74D0CD9F2D927AF500CDD6EC /* Resources */,
+				74D0CDFA2D927C0200CDD6EC /* Sources */,
+				74D0CDFB2D927C0200CDD6EC /* Frameworks */,
+				74D0CDFC2D927C0200CDD6EC /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				74D0CDA32D927AF500CDD6EC /* PBXTargetDependency */,
+				74D0CE002D927C0200CDD6EC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				74D0CDA42D927AF500CDD6EC /* auto-wifi-loginTests */,
+				74D0CE012D927C0200CDD6EC /* wifiloginTests */,
 			);
-			name = "auto-wifi-loginTests";
+			name = wifiloginTests;
 			packageProductDependencies = (
 			);
-			productName = "auto-wifi-loginTests";
-			productReference = 74D0CDA12D927AF500CDD6EC /* auto-wifi-loginTests.xctest */;
+			productName = wifiloginTests;
+			productReference = 74D0CDFE2D927C0200CDD6EC /* wifiloginTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		74D0CDAA2D927AF500CDD6EC /* auto-wifi-loginUITests */ = {
+		74D0CE072D927C0200CDD6EC /* wifiloginUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 74D0CDBB2D927AF500CDD6EC /* Build configuration list for PBXNativeTarget "auto-wifi-loginUITests" */;
+			buildConfigurationList = 74D0CE182D927C0200CDD6EC /* Build configuration list for PBXNativeTarget "wifiloginUITests" */;
 			buildPhases = (
-				74D0CDA72D927AF500CDD6EC /* Sources */,
-				74D0CDA82D927AF500CDD6EC /* Frameworks */,
-				74D0CDA92D927AF500CDD6EC /* Resources */,
+				74D0CE042D927C0200CDD6EC /* Sources */,
+				74D0CE052D927C0200CDD6EC /* Frameworks */,
+				74D0CE062D927C0200CDD6EC /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				74D0CDAD2D927AF500CDD6EC /* PBXTargetDependency */,
+				74D0CE0A2D927C0200CDD6EC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				74D0CDAE2D927AF500CDD6EC /* auto-wifi-loginUITests */,
+				74D0CE0B2D927C0200CDD6EC /* wifiloginUITests */,
 			);
-			name = "auto-wifi-loginUITests";
+			name = wifiloginUITests;
 			packageProductDependencies = (
 			);
-			productName = "auto-wifi-loginUITests";
-			productReference = 74D0CDAB2D927AF500CDD6EC /* auto-wifi-loginUITests.xctest */;
+			productName = wifiloginUITests;
+			productReference = 74D0CE082D927C0200CDD6EC /* wifiloginUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		74D0CD862D927AF300CDD6EC /* Project object */ = {
+		74D0CDE32D927C0000CDD6EC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
-					74D0CD8D2D927AF300CDD6EC = {
+					74D0CDEA2D927C0000CDD6EC = {
 						CreatedOnToolsVersion = 16.2;
 					};
-					74D0CDA02D927AF500CDD6EC = {
+					74D0CDFD2D927C0200CDD6EC = {
 						CreatedOnToolsVersion = 16.2;
-						TestTargetID = 74D0CD8D2D927AF300CDD6EC;
+						TestTargetID = 74D0CDEA2D927C0000CDD6EC;
 					};
-					74D0CDAA2D927AF500CDD6EC = {
+					74D0CE072D927C0200CDD6EC = {
 						CreatedOnToolsVersion = 16.2;
-						TestTargetID = 74D0CD8D2D927AF300CDD6EC;
+						TestTargetID = 74D0CDEA2D927C0000CDD6EC;
 					};
 				};
 			};
-			buildConfigurationList = 74D0CD892D927AF300CDD6EC /* Build configuration list for PBXProject "auto-wifi-login" */;
+			buildConfigurationList = 74D0CDE62D927C0000CDD6EC /* Build configuration list for PBXProject "wifilogin" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 74D0CD852D927AF300CDD6EC;
+			mainGroup = 74D0CDE22D927C0000CDD6EC;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 74D0CD8F2D927AF300CDD6EC /* Products */;
+			productRefGroup = 74D0CDEC2D927C0000CDD6EC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				74D0CD8D2D927AF300CDD6EC /* auto-wifi-login */,
-				74D0CDA02D927AF500CDD6EC /* auto-wifi-loginTests */,
-				74D0CDAA2D927AF500CDD6EC /* auto-wifi-loginUITests */,
+				74D0CDEA2D927C0000CDD6EC /* wifilogin */,
+				74D0CDFD2D927C0200CDD6EC /* wifiloginTests */,
+				74D0CE072D927C0200CDD6EC /* wifiloginUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		74D0CD8C2D927AF300CDD6EC /* Resources */ = {
+		74D0CDE92D927C0000CDD6EC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		74D0CD9F2D927AF500CDD6EC /* Resources */ = {
+		74D0CDFC2D927C0200CDD6EC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		74D0CDA92D927AF500CDD6EC /* Resources */ = {
+		74D0CE062D927C0200CDD6EC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -232,21 +232,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		74D0CD8A2D927AF300CDD6EC /* Sources */ = {
+		74D0CDE72D927C0000CDD6EC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		74D0CD9D2D927AF500CDD6EC /* Sources */ = {
+		74D0CDFA2D927C0200CDD6EC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		74D0CDA72D927AF500CDD6EC /* Sources */ = {
+		74D0CE042D927C0200CDD6EC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -256,20 +256,20 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		74D0CDA32D927AF500CDD6EC /* PBXTargetDependency */ = {
+		74D0CE002D927C0200CDD6EC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 74D0CD8D2D927AF300CDD6EC /* auto-wifi-login */;
-			targetProxy = 74D0CDA22D927AF500CDD6EC /* PBXContainerItemProxy */;
+			target = 74D0CDEA2D927C0000CDD6EC /* wifilogin */;
+			targetProxy = 74D0CDFF2D927C0200CDD6EC /* PBXContainerItemProxy */;
 		};
-		74D0CDAD2D927AF500CDD6EC /* PBXTargetDependency */ = {
+		74D0CE0A2D927C0200CDD6EC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 74D0CD8D2D927AF300CDD6EC /* auto-wifi-login */;
-			targetProxy = 74D0CDAC2D927AF500CDD6EC /* PBXContainerItemProxy */;
+			target = 74D0CDEA2D927C0000CDD6EC /* wifilogin */;
+			targetProxy = 74D0CE092D927C0200CDD6EC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		74D0CDB32D927AF500CDD6EC /* Debug */ = {
+		74D0CE102D927C0200CDD6EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -332,7 +332,7 @@
 			};
 			name = Debug;
 		};
-		74D0CDB42D927AF500CDD6EC /* Release */ = {
+		74D0CE112D927C0200CDD6EC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -387,16 +387,16 @@
 			};
 			name = Release;
 		};
-		74D0CDB62D927AF500CDD6EC /* Debug */ = {
+		74D0CE132D927C0200CDD6EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "auto-wifi-login/auto_wifi_login.entitlements";
+				CODE_SIGN_ENTITLEMENTS = wifilogin/wifilogin.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"auto-wifi-login/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"wifilogin/Preview Content\"";
 				DEVELOPMENT_TEAM = RVK8HKBXN6;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -408,23 +408,23 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.arjunmnath.auto-wifi-login";
+				PRODUCT_BUNDLE_IDENTIFIER = com.arjunmnath.wifilogin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		74D0CDB72D927AF500CDD6EC /* Release */ = {
+		74D0CE142D927C0200CDD6EC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "auto-wifi-login/auto_wifi_login.entitlements";
+				CODE_SIGN_ENTITLEMENTS = wifilogin/wifilogin.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"auto-wifi-login/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"wifilogin/Preview Content\"";
 				DEVELOPMENT_TEAM = RVK8HKBXN6;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -436,14 +436,14 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.arjunmnath.auto-wifi-login";
+				PRODUCT_BUNDLE_IDENTIFIER = com.arjunmnath.wifilogin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
-		74D0CDB92D927AF500CDD6EC /* Debug */ = {
+		74D0CE162D927C0200CDD6EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -453,15 +453,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.arjunmnath.auto-wifi-loginTests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.arjunmnath.wifiloginTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/auto-wifi-login.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/auto-wifi-login";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/wifilogin.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/wifilogin";
 			};
 			name = Debug;
 		};
-		74D0CDBA2D927AF500CDD6EC /* Release */ = {
+		74D0CE172D927C0200CDD6EC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -471,15 +471,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.arjunmnath.auto-wifi-loginTests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.arjunmnath.wifiloginTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/auto-wifi-login.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/auto-wifi-login";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/wifilogin.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/wifilogin";
 			};
 			name = Release;
 		};
-		74D0CDBC2D927AF500CDD6EC /* Debug */ = {
+		74D0CE192D927C0200CDD6EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -487,15 +487,15 @@
 				DEVELOPMENT_TEAM = RVK8HKBXN6;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.arjunmnath.auto-wifi-loginUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.arjunmnath.wifiloginUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "auto-wifi-login";
+				TEST_TARGET_NAME = wifilogin;
 			};
 			name = Debug;
 		};
-		74D0CDBD2D927AF500CDD6EC /* Release */ = {
+		74D0CE1A2D927C0200CDD6EC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -503,54 +503,54 @@
 				DEVELOPMENT_TEAM = RVK8HKBXN6;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.arjunmnath.auto-wifi-loginUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.arjunmnath.wifiloginUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "auto-wifi-login";
+				TEST_TARGET_NAME = wifilogin;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		74D0CD892D927AF300CDD6EC /* Build configuration list for PBXProject "auto-wifi-login" */ = {
+		74D0CDE62D927C0000CDD6EC /* Build configuration list for PBXProject "wifilogin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				74D0CDB32D927AF500CDD6EC /* Debug */,
-				74D0CDB42D927AF500CDD6EC /* Release */,
+				74D0CE102D927C0200CDD6EC /* Debug */,
+				74D0CE112D927C0200CDD6EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		74D0CDB52D927AF500CDD6EC /* Build configuration list for PBXNativeTarget "auto-wifi-login" */ = {
+		74D0CE122D927C0200CDD6EC /* Build configuration list for PBXNativeTarget "wifilogin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				74D0CDB62D927AF500CDD6EC /* Debug */,
-				74D0CDB72D927AF500CDD6EC /* Release */,
+				74D0CE132D927C0200CDD6EC /* Debug */,
+				74D0CE142D927C0200CDD6EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		74D0CDB82D927AF500CDD6EC /* Build configuration list for PBXNativeTarget "auto-wifi-loginTests" */ = {
+		74D0CE152D927C0200CDD6EC /* Build configuration list for PBXNativeTarget "wifiloginTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				74D0CDB92D927AF500CDD6EC /* Debug */,
-				74D0CDBA2D927AF500CDD6EC /* Release */,
+				74D0CE162D927C0200CDD6EC /* Debug */,
+				74D0CE172D927C0200CDD6EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		74D0CDBB2D927AF500CDD6EC /* Build configuration list for PBXNativeTarget "auto-wifi-loginUITests" */ = {
+		74D0CE182D927C0200CDD6EC /* Build configuration list for PBXNativeTarget "wifiloginUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				74D0CDBC2D927AF500CDD6EC /* Debug */,
-				74D0CDBD2D927AF500CDD6EC /* Release */,
+				74D0CE192D927C0200CDD6EC /* Debug */,
+				74D0CE1A2D927C0200CDD6EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 74D0CD862D927AF300CDD6EC /* Project object */;
+	rootObject = 74D0CDE32D927C0000CDD6EC /* Project object */;
 }

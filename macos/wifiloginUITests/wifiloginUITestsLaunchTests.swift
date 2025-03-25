@@ -1,13 +1,13 @@
 //
-//  auto_wifi_loginUITestsLaunchTests.swift
-//  auto-wifi-loginUITests
+//  wifiloginUITestsLaunchTests.swift
+//  wifiloginUITests
 //
 //  Created by Arjun Manjunath on 25/03/25.
 //
 
 import XCTest
 
-final class auto_wifi_loginUITestsLaunchTests: XCTestCase {
+final class wifiloginUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
