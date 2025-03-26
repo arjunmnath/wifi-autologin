@@ -1,7 +1,5 @@
 package com.arjunmnath.wifilogger.wifi
-import android.annotation.SuppressLint
 import android.app.ActivityManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.service.quicksettings.TileService
@@ -46,9 +44,9 @@ class AutoLoginTile: TileService() {
     }
 
     companion object {
-        const val ACTION_START_LISTENING = "com.arjunmnath.horizon.wifilogger.auto_login_tile.ACTION_START_LISTENING"
-        const val ACTION_STOP_LISTENING = "com.arjunmnath.horizon.wifilogger.auto_login_tile.ACTION_STOP_LISTENING"
-        const val ACTION_NOTIFY = "com.arjunmnath.horizon.wifilogger.auto_login_tile.NOTIFY"
+        const val ACTION_START_LISTENING = "com.arjunmnath.horizon.wifi.autologin.auto_login_tile.ACTION_START_LISTENING"
+        const val ACTION_STOP_LISTENING = "com.arjunmnath.horizon.wifi.autologin.auto_login_tile.ACTION_STOP_LISTENING"
+        const val ACTION_NOTIFY = "com.arjunmnath.horizon.wifi.autologin.auto_login_tile.NOTIFY"
     }
     fun triggerStartListening() {
         qsTile.state = Tile.STATE_ACTIVE
@@ -73,7 +71,7 @@ class AutoLoginTile: TileService() {
         val tile = qsTile
         qsTile.label = "Auto Wifi Login"
         if (isServiceRunning(this, LoginService::class.java)) {
-            Log.d("AutoLoginTile", "Service is running");
+            Log.d("AutoLoginTile", "Service is running")
             tile.state = Tile.STATE_ACTIVE
         } else {
             tile.state = Tile.STATE_INACTIVE
@@ -88,7 +86,7 @@ class AutoLoginTile: TileService() {
     }
 
     private fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
-        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val manager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
         return manager.getRunningServices(Int.MAX_VALUE).any { it.service.className == serviceClass.name }
     }
 }

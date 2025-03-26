@@ -1,10 +1,17 @@
 package com.arjunmnath.wifilogger.wifi
 
+import android.annotation.SuppressLint
 import android.content.ContextWrapper
 import android.util.Log
 import com.arjunmnath.wifilogger.R
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.os.Build
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,6 +21,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Properties
 import kotlin.collections.iterator
 
@@ -30,20 +39,20 @@ class LoginHandler(private val context: LoginService) {
             if (state == LoginState.LOGGEDIN) {
                 return state;
             }
-            val generateCaptive= "http://connectivitycheck.gstatic.com/"
+            val generateCaptive= "http://connectivitycheck.gstatic.com/generate_204"
+            Log.d("handleCaptivePortal", "Captive portal request sent")
             val captivePortalRequest= Request.Builder()
                 .url(generateCaptive)
                 .addHeader("User-Agent", "Mozilla/5.0")
                 .addHeader("Accept", "text/html")
                 .get()
                 .build()
-            Log.d("handleCaptivePortal", "Captive portal request sent")
+
             val client = OkHttpClient()
             client.newCall(captivePortalRequest).execute().use { response ->
                 val captivePortalHTML = response.body?.string()
                 Log.d("handleCaptivePortal", captivePortalHTML.toString())
                 val portalURL= extractLoginPortalURL(captivePortalHTML.toString());
-                
                 if (portalURL == null) {
                     return LoginState.CONNECTED;
                 }
