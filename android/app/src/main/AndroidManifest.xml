@@ -32,7 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <service android:name=".wifi.LoginService" android:foregroundServiceType="connectedDevice"
             tools:ignore="ForegroundServicePermission" />
         <service android:name=".wifi.MonitorService"
