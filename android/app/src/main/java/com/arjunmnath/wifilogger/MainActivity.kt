@@ -9,7 +9,6 @@ import android.util.Log
 import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.arjunmnath.wifilogger.wifi.LoginWorker
@@ -17,6 +16,8 @@ import com.arjunmnath.wifilogger.wifi.LoginService
 import com.arjunmnath.wifilogger.wifi.StateChangeReceiver
 import java.util.concurrent.TimeUnit
 import android.Manifest
+import com.arjunmnath.wifilogger.wifi.VPNService
+
 class MainActivity : ComponentActivity() {
     private lateinit var stateChangeReceiver: StateChangeReceiver
     companion object {

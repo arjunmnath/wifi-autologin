@@ -79,6 +79,8 @@ class LoginService : Service() {
             Logger.getLogger("WifiLoginService").info(state.toString())
             when (state) {
                 LoginState.CONNECTED, LoginState.LOGGEDIN -> {
+                    val intent = Intent(this@LoginService, VPNService::class.java)
+                    startService(intent)
                     initSuccessNotification()
                 }
 
