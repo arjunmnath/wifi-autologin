@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.arjunmnath.wifilogger"
-        minSdk = 29
+        minSdk = 28
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -58,7 +58,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.okhttp)
     implementation(libs.jsoup)
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
-
+    implementation(libs.androidx.core.ktx.v190)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.kotlinx.serialization.json)
 }
