@@ -25,7 +25,6 @@ class VPNService: VpnService() {
         val builder = Builder()
             .addAddress("10.0.0.2", 32)  // Fake VPN IP
             .addRoute(gatewayIP, 32)
-            .addDnsServer(gatewayIP)
             .addDnsServer("8.8.8.8")  // Google DNS as backup
             .addDnsServer("1.1.1.1")  // Cloudflare DNS
             .setSession("WifiVPN")

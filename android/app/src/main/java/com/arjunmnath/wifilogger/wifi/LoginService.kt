@@ -31,6 +31,7 @@ class NotificationAction {
 class LoginService : Service() {
     // TODO: logout timer not resetting
     // TODO: on wifi off state, stop the service, restart when wifi is turned on
+    // TODO: check the vpn service and verify it's necessity
     private val channelId = "wifi_login_channel"
     private val logoutInterval = 10800;
     private var state: LoginState = LoginState.UNKNOWN;
