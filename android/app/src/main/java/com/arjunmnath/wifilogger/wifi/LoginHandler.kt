@@ -1,76 +1,164 @@
 package com.arjunmnath.wifilogger.wifi
-
+import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.util.Log
 import com.arjunmnath.wifilogger.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Properties
 import kotlin.collections.iterator
 
 enum class LoginState { CONNECTED, LOGGEDIN, LOGGEDOUT, MAXCONCURRENT, AUTHFAILED, UNKNOWN, CREDUNAVAILABLE }
 
 
-class LoginHandler(private val context: LoginService) {
-    private var nReTries = 3;
-    val loginPortalDomain  = "http://172.16.222.1:1000";
-    // TODO: wont work if connected to vpns
-    // TODO: IOEXception not catching (unexpected end of stream) (caused function unknwon)
-    // TODO: captive portal not responding
-    suspend fun initiateLogin() : LoginState{
-            val state = checkLoginStatus();
-            if (state == LoginState.LOGGEDIN) {
-                return state;
-            }
-            return openLoginPortal("http://172.16.222.1:1000/login?")
+class LoginHandler() {
+    private var nReTries = 3
+    private lateinit var network: Network
+    private lateinit var context: LoginService
 
+    // TODO: wont work if connected to vpns
+    // TODO: IOEXception not catching (unexpected end of stream) (caused function unknown)
+    // TODO: captive portal not responding
+
+    constructor(context: LoginService) : this() {
+        this.context = context
+        getWifiNetwork(context)
+    }
+
+    fun getWifiNetwork(context: Context) {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networks: Array<Network> = cm.allNetworks
+        for (network in networks) {
+            val networkCapabilities = cm.getNetworkCapabilities(network)
+            if (networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL) == true) {
+                this.network = network
+            }
+            println("🔍 Network: $network | Capabilities: $networkCapabilities")
+            when {
+                networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true ->
+                    println("WiFi Network: $network")
+
+                networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true ->
+                    println("Mobile Data Network: $network")
+
+                networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true ->
+                    println("VPN Network: $network")
+
+                else ->
+                    println("Other Network: $network")
+            }
+        }
+        if (::network.isInitialized) {
+            println("Selected Network: $network")
+        } else {
+            // TODO: raise an error
+            println("network not select");
+        }
     }
 
 
-    private suspend fun openLoginPortal(portalUrl: String) : LoginState {
-        val loginPortalRequest = Request.Builder()
-            .url(portalUrl)
-            .addHeader("User-Agent", "Mozilla/5.0")
-            .addHeader("Accept", "text/html")
-            .get()
-            .build()
+    suspend fun get(urlString: String): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL(urlString)
+                val connection = network.openConnection(url) as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connectTimeout = 10000
+                connection.readTimeout = 10000
+                connection.doInput = true
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    connection.inputStream.bufferedReader().use { it.readText() }
+                } else {
+                    "Error: ${connection.responseCode}"
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                "Exception: ${e.message}"
+            }
+        }
+    }
 
-        val client = OkHttpClient()
-        client.newCall(loginPortalRequest).execute().use { response ->
-            val loginPortalHTML= response.body?.string()
-            Log.d("openLoginPortal", loginPortalHTML.toString())
-            val domainRegex = """http?://([^/]+)""".toRegex()
-            val domain = domainRegex.find(portalUrl)
-            val redirectAndMagic  = extractRedirectAndMagic(domain?.value.toString(), loginPortalHTML.toString())
-            if (
-                !redirectAndMagic.get("submit").isNullOrEmpty() &&
-                !redirectAndMagic.get("magic").isNullOrEmpty() &&
-                !redirectAndMagic.get("4Tredir").isNullOrEmpty()) {
+
+    suspend fun initiateLogin(): LoginState {
+        val state = checkLoginStatus()
+        if (state == LoginState.LOGGEDIN) {
+            return state
+        }
+        val generateCaptive = "http://connectivitycheck.gstatic.com/generate_204"
+        Log.d("handleCaptivePortal", "Captive portal request sent")
+        val captivePortalHTML = get(generateCaptive)
+        Log.d("handleCaptivePortal", captivePortalHTML.toString())
+        val portalURL = extractLoginPortalURL(captivePortalHTML.toString())
+        if (portalURL == null) {
+            return LoginState.CONNECTED
+        } else {
+            return openLoginPortal(portalURL)
+        }
+        return LoginState.UNKNOWN
+    }
+
+    private fun extractLoginPortalURL(html: String): String? {
+        val regex = """http:\/\/172\.16\.222\.1:1000\/fgtauth\?([a-fA-F0-9]+)""".toRegex()
+        val matchResult = regex.find(html)
+        if (matchResult != null) {
+            val entireUrl = matchResult.value
+            Log.d("getLoginPortalURL", entireUrl)
+            return entireUrl
+        } else {
+            Log.d("getLoginPortalURL", "No match found")
+            return null
+        }
+    }
+
+
+    private suspend fun openLoginPortal(portalUrl: String): LoginState {
+        val loginPortalHTML = get(portalUrl)
+        Log.d("openLoginPortal", loginPortalHTML.toString())
+        val domainRegex = """http?://([^/]+)""".toRegex()
+        val domain = domainRegex.find(portalUrl)
+        val redirectAndMagic =
+            extractRedirectAndMagic(domain?.value.toString(), loginPortalHTML.toString())
+        if (
+            !redirectAndMagic["submit"].isNullOrEmpty() &&
+            !redirectAndMagic["magic"].isNullOrEmpty() &&
+            !redirectAndMagic["4Tredir"].isNullOrEmpty()
+        ) {
 //                val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
 //                val username = sharedPreferences.getString("username", "")
 //                val password = sharedPreferences.getString("password", "")
 //                if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
 //                    return LoginState.CREDUNAVAILABLE
 //                }
-                val properties = Properties().apply {
-                    ContextWrapper(context).resources.openRawResource(R.raw.config).use { load(it) }
-                }
-                val username = properties.getProperty("username")
-                val password = properties.getProperty("password")
-                redirectAndMagic["username"] = username
-                redirectAndMagic["password"] = password
-                redirectAndMagic["4Tredir"] = "http://connectivitycheck.static.com"
-                return doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic)
+            val properties = Properties().apply {
+                ContextWrapper(context).resources.openRawResource(R.raw.config).use { load(it) }
             }
-            else {
-                return LoginState.UNKNOWN;
-            }
+            val username = properties.getProperty("username")
+            val password = properties.getProperty("password")
+            redirectAndMagic["username"] = username
+            redirectAndMagic["password"] = password
+            redirectAndMagic["4Tredir"] = "http://connectivitycheck.static.com"
+            return doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic)
+        } else {
+            return LoginState.UNKNOWN
         }
+
     }
-    private fun extractRedirectAndMagic(loginPortalDomain:String, html: String): MutableMap<String, String> {
+
+    private fun extractRedirectAndMagic(
+        loginPortalDomain: String,
+        html: String
+    ): MutableMap<String, String> {
         val regex = """<(form|input)[^>]*>""".toRegex()
         val matches = regex.findAll(html)
         var matchedTags = ""
@@ -89,7 +177,7 @@ class LoginHandler(private val context: LoginService) {
             for (input in inputs) {
                 val name = input.attr("name")
                 val value = input.attr("value")
-                if (name == "4Tredir" || name=="magic") {
+                if (name == "4Tredir" || name == "magic") {
                     res[name] = value
                 }
             }
@@ -102,50 +190,55 @@ class LoginHandler(private val context: LoginService) {
     }
 
     private suspend fun doLoginRequest(URL: String, map: MutableMap<String, String>) : LoginState {
+        nReTries--
         val loginPayload = FormBody.Builder()
         for ((key, value) in map) {
             loginPayload.add(key, value)
         }
         Log.d("DoLoginRequest", URL)
-        val requestBody = loginPayload.build()
+        val formBody = loginPayload.build()
+
         val loginPortalRequest = Request.Builder()
             .url(URL)
-            .post(requestBody)
+            .post(formBody)
             .build()
 
-        val client = OkHttpClient()
+        val client = OkHttpClient.Builder()
+            .socketFactory(network.socketFactory)
+            .build()
+
+
         client.newCall(loginPortalRequest).execute().use { response ->
             val responseHtml = response.body?.string().toString()
-            val status = extractLoginFailedState(responseHtml);
+            val status = extractLoginFailedState(responseHtml)
             Log.d("DoLoginRequest", status.toString())
             return status
             if (status == LoginState.UNKNOWN && nReTries > 0) {
                 doLoginRequest(URL, map)
             } else if (nReTries == 0) {
-                return LoginState.AUTHFAILED;
+                return LoginState.AUTHFAILED
             }
             else {
-                  return status;
+                return status
             }
         }
-        return LoginState.UNKNOWN;
+        return LoginState.UNKNOWN
     }
 
-    private fun extractLoginFailedState(html: String) : LoginState {
+    private fun extractLoginFailedState(html: String): LoginState {
         Log.d("ExtractLoginStatus", html)
-        var maxConcurrentRegex = """Sorry, user&apos;s concurrent authentication is over limit""".toRegex()
+        var maxConcurrentRegex =
+            """Sorry, user&apos;s concurrent authentication is over limit""".toRegex()
         var authFailedRegex = """Firewall authentication failed. Please try again.""".toRegex()
-        var successRegex  = """"http://172.16.222.1:1000/keepalive\?""".toRegex()
+        var successRegex = """"http://172.16.222.1:1000/keepalive\?""".toRegex()
         if (successRegex.containsMatchIn(html)) {
-            return LoginState.LOGGEDIN;
+            return LoginState.LOGGEDIN
+        } else if (maxConcurrentRegex.containsMatchIn(html)) {
+            return LoginState.MAXCONCURRENT
+        } else if (authFailedRegex.containsMatchIn(html)) {
+            return LoginState.AUTHFAILED
         }
-        else if (maxConcurrentRegex.containsMatchIn(html)) {
-            return LoginState.MAXCONCURRENT;
-        }
-        else if (authFailedRegex.containsMatchIn(html)) {
-            return LoginState.AUTHFAILED;
-        }
-        return LoginState.UNKNOWN;
+        return LoginState.UNKNOWN
     }
 
     companion object {
@@ -162,22 +255,22 @@ class LoginHandler(private val context: LoginService) {
         }
 
 
-        suspend fun initiateLogout(): LoginState{
-            //  handle sockettimeotuexcpetion
-                val generateLogout = "http://172.16.222.1:1000/logout?"
-                val captivePortalRequest = Request.Builder()
-                    .url(generateLogout)
-                    .addHeader("User-Agent", "Mozilla/5.0")
-                    .addHeader("Accept", "text/html")
-                    .get()
-                    .build()
-                val client = OkHttpClient()
-                client.newCall(captivePortalRequest).execute().use { response ->
-                    val logoutPageHtml = response.body?.string()
-                    val isLoggedOut = extractSuccess(logoutPageHtml.toString())
-                    Log.d("initiateLogout", isLoggedOut.toString())
-                }
-                return checkLoginStatus()
+        suspend fun initiateLogout(): LoginState {
+            //  TODO: handle sockettimeotuexcpetion
+            val generateLogout = "http://172.16.222.1:1000/logout?"
+            val captivePortalRequest = Request.Builder()
+                .url(generateLogout)
+                .addHeader("User-Agent", "Mozilla/5.0")
+                .addHeader("Accept", "text/html")
+                .get()
+                .build()
+            val client = OkHttpClient()
+            client.newCall(captivePortalRequest).execute().use { response ->
+                val logoutPageHtml = response.body?.string()
+                val isLoggedOut = extractSuccess(logoutPageHtml.toString())
+                Log.d("initiateLogout", isLoggedOut.toString())
+            }
+            return checkLoginStatus()
         }
 
 
@@ -199,7 +292,7 @@ class LoginHandler(private val context: LoginService) {
             } catch (e: IOException) {
                 return LoginState.LOGGEDOUT
             }
-            return LoginState.UNKNOWN;
+            return LoginState.UNKNOWN
         }
     }
 }

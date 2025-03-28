@@ -62,15 +62,16 @@ class LoginService : Service() {
                     indents = arrayOf(
                         NotificationAction(
                             title = "login",
-                            drawable = android.R.drawable.ic_secure,
+                            drawable =com.arjunmnath.wifilogger.R.drawable.star_icon,
                             intent = getRetryIntend()
                         )
                     )
                 )
             }
         }
-
     }
+
+
     private fun loginAction() {
         CoroutineScope(Dispatchers.IO).launch {
             var handler = LoginHandler(this@LoginService)
@@ -87,7 +88,7 @@ class LoginService : Service() {
                         title = "Wifi Login Failed",
                         message = "Max concurrent login reached",
                         onGoing = false,
-                        indents = arrayOf(NotificationAction(title = "Retry", drawable = android.R.drawable.ic_secure, intent = getRetryIntend()))
+                        indents = arrayOf(NotificationAction(title = "Retry", drawable =com.arjunmnath.wifilogger.R.drawable.star_icon, intent = getRetryIntend()))
                     )
                 }
 
@@ -138,7 +139,7 @@ class LoginService : Service() {
         notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle("WiFi Login Running")
             .setContentText("Initializing WiFi auto-login...")
-            .setSmallIcon(android.R.drawable.ic_secure)
+            .setSmallIcon(com.arjunmnath.wifilogger.R.drawable.star_icon)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         startForeground(notificationId, notificationBuilder.build())
     }
@@ -152,7 +153,7 @@ class LoginService : Service() {
                     title = "Logged in to WiFi",
                     message = "Time remaining on network $i seconds...",
                     onGoing = true,
-                    indents = arrayOf(NotificationAction(title = "Logout", drawable = android.R.drawable.ic_secure, intent = getLogoutIntend()))
+                    indents = arrayOf(NotificationAction(title = "Logout", drawable = com.arjunmnath.wifilogger.R.drawable.star_icon, intent = getLogoutIntend()))
                 )
                 delay(1000)
             }
