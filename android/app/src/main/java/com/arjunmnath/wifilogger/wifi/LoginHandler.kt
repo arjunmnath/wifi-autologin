@@ -1,28 +1,13 @@
 package com.arjunmnath.wifilogger.wifi
 
-import android.annotation.SuppressLint
 import android.content.ContextWrapper
 import android.util.Log
 import com.arjunmnath.wifilogger.R
-import android.content.Context
-import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.SharedPreferences
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
-import android.os.Build
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.Properties
 import kotlin.collections.iterator
 
@@ -31,6 +16,7 @@ enum class LoginState { CONNECTED, LOGGEDIN, LOGGEDOUT, MAXCONCURRENT, AUTHFAILE
 
 class LoginHandler(private val context: LoginService) {
     private var nReTries = 3;
+    val loginPortalDomain  = "http://172.16.222.1:1000";
     // TODO: wont work if connected to vpns
     // TODO: IOEXception not catching (unexpected end of stream) (caused function unknwon)
     // TODO: captive portal not responding
@@ -39,45 +25,14 @@ class LoginHandler(private val context: LoginService) {
             if (state == LoginState.LOGGEDIN) {
                 return state;
             }
-            val generateCaptive= "http://connectivitycheck.gstatic.com/generate_204"
-            Log.d("handleCaptivePortal", "Captive portal request sent")
-            val captivePortalRequest= Request.Builder()
-                .url(generateCaptive)
-                .addHeader("User-Agent", "Mozilla/5.0")
-                .addHeader("Accept", "text/html")
-                .get()
-                .build()
-
-            val client = OkHttpClient()
-            client.newCall(captivePortalRequest).execute().use { response ->
-                val captivePortalHTML = response.body?.string()
-                Log.d("handleCaptivePortal", captivePortalHTML.toString())
-                val portalURL= extractLoginPortalURL(captivePortalHTML.toString());
-                if (portalURL == null) {
-                    return LoginState.CONNECTED;
-                }
-                else {
-                    return openLoginPortal(portalURL)
-                }
-            }
+            return openLoginPortal("http://172.16.222.1:1000/login?")
 
     }
-    private fun extractLoginPortalURL(html:String): String? {
-        val regex = """http:\/\/172\.16\.222\.1:1000\/fgtauth\?([a-fA-F0-9]+)""".toRegex()
-        val matchResult = regex.find(html)
-        if (matchResult != null) {
-            val entireUrl = matchResult.value
-            Log.d("getLoginPortalURL", entireUrl)
-            return entireUrl;
-        } else {
-            Log.d("getLoginPortalURL", "No match found")
-            return null
-        }
-    }
 
-    private suspend fun openLoginPortal(poralUrl: String) : LoginState {
+
+    private suspend fun openLoginPortal(portalUrl: String) : LoginState {
         val loginPortalRequest = Request.Builder()
-            .url(poralUrl)
+            .url(portalUrl)
             .addHeader("User-Agent", "Mozilla/5.0")
             .addHeader("Accept", "text/html")
             .get()
@@ -88,7 +43,7 @@ class LoginHandler(private val context: LoginService) {
             val loginPortalHTML= response.body?.string()
             Log.d("openLoginPortal", loginPortalHTML.toString())
             val domainRegex = """http?://([^/]+)""".toRegex()
-            val domain = domainRegex.find(poralUrl)
+            val domain = domainRegex.find(portalUrl)
             val redirectAndMagic  = extractRedirectAndMagic(domain?.value.toString(), loginPortalHTML.toString())
             if (
                 !redirectAndMagic.get("submit").isNullOrEmpty() &&
@@ -107,6 +62,7 @@ class LoginHandler(private val context: LoginService) {
                 val password = properties.getProperty("password")
                 redirectAndMagic["username"] = username
                 redirectAndMagic["password"] = password
+                redirectAndMagic["4Tredir"] = "http://connectivitycheck.static.com"
                 return doLoginRequest(redirectAndMagic["submit"]!!, redirectAndMagic)
             }
             else {
@@ -150,6 +106,7 @@ class LoginHandler(private val context: LoginService) {
         for ((key, value) in map) {
             loginPayload.add(key, value)
         }
+        Log.d("DoLoginRequest", URL)
         val requestBody = loginPayload.build()
         val loginPortalRequest = Request.Builder()
             .url(URL)

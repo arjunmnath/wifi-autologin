@@ -7,6 +7,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,7 @@ class LoginService : Service() {
     // TODO: on wifi off state, stop the service, restart when wifi is turned on
     private val channelId = "wifi_login_channel"
     private val logoutInterval = 10800;
+    private var state: LoginState = LoginState.UNKNOWN;
     private val notificationId = 1
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationBuilder: NotificationCompat.Builder
@@ -43,15 +45,15 @@ class LoginService : Service() {
         when (intent?.action) {
             ACTION_RETRY -> loginAction()
             ACTION_LOGIN -> loginAction()
-            ACTION_LOGOUT -> logoutAction(this)
+            ACTION_LOGOUT -> logoutAction()
         }
         return START_STICKY
     }
 
-    private fun logoutAction(context: Context) {
-        // todo: failed to update the notification fix it
+    private fun logoutAction() {
+        // todo: failed to update the notification fix it, fix: implement a lock for updateNotification
         CoroutineScope(Dispatchers.IO).launch {
-            val state = LoginHandler.initiateLogout()
+            state = LoginHandler.initiateLogout()
             if (state == LoginState.LOGGEDOUT) {
                 updateNotification(
                     title = "Logged out",
@@ -72,7 +74,7 @@ class LoginService : Service() {
     private fun loginAction() {
         CoroutineScope(Dispatchers.IO).launch {
             var handler = LoginHandler(this@LoginService)
-            val state = handler.initiateLogin()
+            state = handler.initiateLogin()
             Logger.getLogger("WifiLoginService").info(state.toString())
             when (state) {
                 LoginState.CONNECTED, LoginState.LOGGEDIN -> {
@@ -142,7 +144,10 @@ class LoginService : Service() {
     }
     private fun initSuccessNotification() {
         serviceScope.launch {
-            for (i in logoutInterval downTo 0) {
+            for (i in logoutInterval downTo 0 ){
+                if (state != LoginState.LOGGEDIN) {
+                    break;
+                }
                 updateNotification(
                     title = "Logged in to WiFi",
                     message = "Time remaining on network $i seconds...",
@@ -176,7 +181,6 @@ class LoginService : Service() {
             notificationBuilder.addAction(intent.drawable, intent.title, intent.intent)
         }
         notificationManager.notify(notificationId, notificationBuilder.build())
-
     }
     override fun onDestroy() {
         super.onDestroy()
