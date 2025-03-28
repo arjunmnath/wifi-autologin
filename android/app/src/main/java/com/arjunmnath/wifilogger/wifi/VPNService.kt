@@ -1,5 +1,8 @@
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.VpnService
+import android.net.wifi.WifiManager
 import android.os.ParcelFileDescriptor
 import java.io.FileInputStream
 
@@ -15,9 +18,13 @@ class VPNService: VpnService() {
     }
 
     private fun runVpn() {
+        val gatewayIP = getWifiGatewayIP(this) ?: "172.16.222.1" // Default fallback
         val builder = Builder()
             .addAddress("10.0.0.2", 32)  // Fake VPN IP
-            .addRoute("0.0.0.0", 0)  // Route all traffic
+            .addRoute(gatewayIP, 32)
+            .addDnsServer(gatewayIP)
+            .addDnsServer("8.8.8.8")  // Google DNS as backup
+            .addDnsServer("1.1.1.1")  // Cloudflare DNS
             .setSession("WifiVPN")
 
         vpnInterface = builder.establish()  // Creates the VPN tunnel
@@ -40,5 +47,13 @@ class VPNService: VpnService() {
     override fun onDestroy() {
         vpnInterface?.close()
         vpnThread?.interrupt()
+    }
+    fun getWifiGatewayIP(context: Context): String? {
+        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val dhcpInfo = wifiManager.dhcpInfo ?: return null
+        return (dhcpInfo.gateway and 0xFF).toString() + "." +
+                ((dhcpInfo.gateway shr 8) and 0xFF) + "." +
+                ((dhcpInfo.gateway shr 16) and 0xFF) + "." +
+                ((dhcpInfo.gateway shr 24) and 0xFF)
     }
 }
