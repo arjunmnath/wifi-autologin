@@ -7,55 +7,74 @@ import android.net.wifi.WifiManager
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 
 
-class VPNService: VpnService() {
-    private var vpnThread: Thread? = null
+class VPNService : VpnService(), Runnable {
     private var vpnInterface: ParcelFileDescriptor? = null
+    private var running = true
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i("VPNService", "Received start id $startId: $intent")
-        vpnThread = Thread { runVpn() }
-        vpnThread?.start()
+        startVpn()
+        Thread(this).start()
         return START_STICKY
     }
-    private fun runVpn() {
-        val gatewayIP = getWifiGatewayIP(this) ?: "172.16.222.1" // Default fallback
-        Log.d("VPNService", "Gateway IP: $gatewayIP")
+
+    private fun startVpn() {
         val builder = Builder()
-            .addAddress("10.0.0.2", 32)  // Fake VPN IP
-            .addRoute(gatewayIP, 32)
-            .addDnsServer("8.8.8.8")  // Google DNS as backup
-            .addDnsServer("1.1.1.1")  // Cloudflare DNS
-            .setSession("WifiVPN")
+            .setSession("MyVPN")
+            .addAddress("10.0.0.2", 24)  // Virtual VPN IP
+            .addRoute("0.0.0.0", 0)      // Capture all traffic
 
-        vpnInterface = builder.establish()  // Creates the VPN tunnel
+        vpnInterface = builder.establish()
+    }
 
-        vpnInterface?.let {
-            val fd = it.fileDescriptor
-            val buffer = ByteArray(32767)
-            while (true) {
-                try {
-                    FileInputStream(fd).use { input ->
-                        input.read(buffer)
-                    }
-                } catch (e: Exception) {
-                    break
-                }
+    override fun run() {
+        val vpnInput = FileInputStream(vpnInterface!!.fileDescriptor)
+        val vpnOutput = FileOutputStream(vpnInterface!!.fileDescriptor)
+
+        val packet = ByteArray(32767) // Max possible packet size
+
+        while (running) {
+            val length = vpnInput.read(packet)
+            if (length > 0) {
+                forwardPacket(packet, length) // Custom function to forward packets
             }
         }
     }
 
-    override fun onDestroy() {
-        vpnInterface?.close()
-        vpnThread?.interrupt()
+    private fun forwardPacket(packet: ByteArray, length: Int) {
+        try {
+            val socket = DatagramSocket()
+            val gatewayIp = getWifiGateway(this) ?: return
+
+            val packetData = DatagramPacket(packet, length, InetAddress.getByName(gatewayIp), 53) // Example: DNS
+            socket.send(packetData)
+            socket.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
-    fun getWifiGatewayIP(context: Context): String? {
-        val wifiManager = context.applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
-        val dhcpInfo = wifiManager.dhcpInfo ?: return null
-        return (dhcpInfo.gateway and 0xFF).toString() + "." +
-                ((dhcpInfo.gateway shr 8) and 0xFF) + "." +
-                ((dhcpInfo.gateway shr 16) and 0xFF) + "." +
-                ((dhcpInfo.gateway shr 24) and 0xFF)
+
+    override fun onDestroy() {
+        running = false
+        vpnInterface?.close()
+    }
+    fun getWifiGateway(context: Context): String? {
+        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val dhcpInfo = wifiManager.dhcpInfo
+        val gatewayIp = dhcpInfo.gateway
+        return InetAddress.getByAddress(
+            byteArrayOf(
+                (gatewayIp and 0xFF).toByte(),
+                (gatewayIp shr 8 and 0xFF).toByte(),
+                (gatewayIp shr 16 and 0xFF).toByte(),
+                (gatewayIp shr 24 and 0xFF).toByte()
+            )
+        ).hostAddress
     }
 }
+

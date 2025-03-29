@@ -1,10 +1,12 @@
 package com.arjunmnath.wifilogger.wifi
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
 import android.util.Log
 import com.arjunmnath.wifilogger.R
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +21,7 @@ import java.net.URL
 import java.util.Properties
 import kotlin.collections.iterator
 
-enum class LoginState { CONNECTED, LOGGEDIN, LOGGEDOUT, MAXCONCURRENT, AUTHFAILED, UNKNOWN, CREDUNAVAILABLE }
+enum class LoginState { CONNECTED, LOGGEDIN, LOGGEDOUT, MAXCONCURRENT, AUTHFAILED, UNKNOWN, CREDUNAVAILABLE, WIFINOTCONNECTED, AVAILABLE}
 
 
 class LoginHandler() {
@@ -36,25 +38,32 @@ class LoginHandler() {
         getWifiNetwork(context)
     }
 
-    fun getWifiNetwork(context: Context) {
+    fun getWifiNetwork(context: Context): LoginState {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networks: Array<Network> = cm.allNetworks
         for (network in networks) {
             val networkCapabilities = cm.getNetworkCapabilities(network)
-            if (networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL) == true) {
-                this.network = network
-            }
             println("🔍 Network: $network | Capabilities: $networkCapabilities")
             when {
-                networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true ->
-                    println("WiFi Network: $network")
+                networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> {
+                    val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val info = wifiManager.connectionInfo
+                    val wifiSSID = info.ssid?.replace("\"", "")
+                    val ssidRegex = "IIITKottayam".toRegex()
+                    if (ssidRegex.containsMatchIn(wifiSSID.toString())) {
+                        if (networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL) == true) {
+                            this.network = network
+                            return LoginState.AVAILABLE
+                        }
+                        else {
+                            return LoginState.LOGGEDIN
+                        }
+                    }
+                    else {
+                        return LoginState.WIFINOTCONNECTED
+                    }
 
-                networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true ->
-                    println("Mobile Data Network: $network")
-
-                networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true ->
-                    println("VPN Network: $network")
-
+                }
                 else ->
                     println("Other Network: $network")
             }
@@ -65,6 +74,7 @@ class LoginHandler() {
             // TODO: raise an error
             println("network not select");
         }
+        return LoginState.WIFINOTCONNECTED
     }
 
 
@@ -104,7 +114,7 @@ class LoginHandler() {
         Log.d("handleCaptivePortal", captivePortalHTML.toString())
         val portalURL = extractLoginPortalURL(captivePortalHTML.toString())
         if (portalURL == null) {
-            return LoginState.CONNECTED
+            return LoginState.LOGGEDIN
         } else {
             return openLoginPortal(portalURL)
         }
