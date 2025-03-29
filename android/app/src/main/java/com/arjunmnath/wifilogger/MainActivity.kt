@@ -16,7 +16,6 @@ import com.arjunmnath.wifilogger.wifi.LoginService
 import com.arjunmnath.wifilogger.wifi.StateChangeReceiver
 import java.util.concurrent.TimeUnit
 import android.Manifest
-import com.arjunmnath.wifilogger.wifi.VPNService
 
 class MainActivity : ComponentActivity() {
     private lateinit var stateChangeReceiver: StateChangeReceiver

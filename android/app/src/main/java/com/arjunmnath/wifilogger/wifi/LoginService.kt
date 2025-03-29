@@ -4,10 +4,13 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.VpnService
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,7 +57,7 @@ class LoginService : Service() {
     private fun logoutAction() {
         // todo: failed to update the notification fix it, fix: implement a lock for updateNotification
         CoroutineScope(Dispatchers.IO).launch {
-            state = LoginHandler.initiateLogout()
+            state = LoginHandler(this@LoginService).initiateLogout()
             if (state == LoginState.LOGGEDOUT) {
                 updateNotification(
                     title = "Logged out",
@@ -86,8 +89,11 @@ class LoginService : Service() {
             Logger.getLogger("WifiLoginService").info(state.toString())
             when (state) {
                 LoginState.CONNECTED, LoginState.LOGGEDIN -> {
-                    val intent = Intent(this@LoginService, VPNService::class.java)
-                    startService(intent)
+                    val vpnIntent = Intent(this@LoginService, VPNService::class.java);
+                    stopService(vpnIntent);
+                    stopService(vpnIntent)
+                    val loginIntent = Intent(this@LoginService, VPNService::class.java)
+                    startService(loginIntent)
                     initSuccessNotification()
                 }
 
@@ -136,11 +142,22 @@ class LoginService : Service() {
                         title = "Wifi Login Failed",
                         message = "Username or Password not set",
                         onGoing = false,
-                        indents = arrayOf())
+                        indents = arrayOf()
+                    )
                 }
-            }
+                LoginState.CREDUNAVAILABLE -> {
+                    updateNotification(
+                        title = "Wifi Login Failed",
+                        message = "Connect to College network",
+                        onGoing = false,
+                        indents = arrayOf(NotificationAction(title = "Retry", drawable =com.arjunmnath.wifilogger.R.drawable.star_icon, intent = getRetryIntend())))
+                }
+                    else -> {}
+                }
+
         }
     }
+
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()

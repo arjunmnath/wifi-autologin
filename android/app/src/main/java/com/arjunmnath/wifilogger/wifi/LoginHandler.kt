@@ -35,7 +35,6 @@ class LoginHandler() {
 
     constructor(context: LoginService) : this() {
         this.context = context
-        getWifiNetwork(context)
     }
 
     fun getWifiNetwork(context: Context): LoginState {
@@ -52,6 +51,7 @@ class LoginHandler() {
                     val ssidRegex = "IIITKottayam".toRegex()
                     if (ssidRegex.containsMatchIn(wifiSSID.toString())) {
                         if (networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL) == true) {
+                            println("Captive Portal: $network")
                             this.network = network
                             return LoginState.AVAILABLE
                         }
@@ -122,7 +122,7 @@ class LoginHandler() {
     }
 
     private fun extractLoginPortalURL(html: String): String? {
-        val regex = """http?://([^/]+)""".toRegex()
+        val regex = """http:\/\/172\.16\.222\.1:1000\/fgtauth\?([a-fA-F0-9]+)""".toRegex()
         val matchResult = regex.find(html)
         if (matchResult != null) {
             val entireUrl = matchResult.value
@@ -257,7 +257,6 @@ class LoginHandler() {
         return LoginState.UNKNOWN
     }
 
-    companion object {
         private fun extractLoginStatus(html: String): Boolean {
             val regex = """Firewall Authentication Keepalive Window""".toRegex()
             val matchResult = regex.find(html)
@@ -272,23 +271,20 @@ class LoginHandler() {
 
 
         suspend fun initiateLogout(): LoginState {
-            //  TODO: handle sockettimeotuexcpetion
-            val generateLogout = "http://172.16.222.1:1000/logout?"
-            val captivePortalRequest = Request.Builder()
-                .url(generateLogout)
-                .addHeader("User-Agent", "Mozilla/5.0")
-                .addHeader("Accept", "text/html")
-                .get()
-                .build()
-            val client = OkHttpClient()
-            client.newCall(captivePortalRequest).execute().use { response ->
-                val logoutPageHtml = response.body?.string()
-                val isLoggedOut = extractSuccess(logoutPageHtml.toString())
-                Log.d("initiateLogout", isLoggedOut.toString())
+            val wifiStatus = getWifiNetwork(context);
+            if (
+                wifiStatus == LoginState.WIFINOTCONNECTED ||
+                wifiStatus == LoginState.LOGGEDIN) {
+                Log.d("initiateLogout", wifiStatus.toString())
+                return  wifiStatus
             }
+            val generateLogout = "http://172.16.222.1:1000/logout?"
+            val response = get(generateLogout)
+            val logoutPageHtml = response.toString();
+            val isLoggedOut = extractSuccess(logoutPageHtml.toString())
+            Log.d("initiateLogout", isLoggedOut.toString())
             return checkLoginStatus()
         }
-
 
         internal suspend fun checkLoginStatus(): LoginState {
             try {
@@ -310,5 +306,5 @@ class LoginHandler() {
             }
             return LoginState.UNKNOWN
         }
-    }
+
 }
