@@ -24,7 +24,10 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-
+      
+    - name: Select Android Directory
+      run: cd android
+      
     - name: Decode Keystore
       run: |
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
