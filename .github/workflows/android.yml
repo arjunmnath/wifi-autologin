@@ -4,9 +4,10 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+-android'
+
 permissions:
   contents: write
-  
+
 jobs:
   build:
     name: Build and Release APK/AAB
@@ -24,16 +25,15 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-      
-    - name: Select Android Directory
-      run: cd android
-      
+
     - name: Decode Keystore
       run: |
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
+      working-directory: android
 
     - name: Build Release APK/AAB
       run: ./gradlew assembleRelease bundleRelease
+      working-directory: android
 
     - name: Sign APK
       run: |
@@ -43,11 +43,13 @@ jobs:
           -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
           -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
           -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+      working-directory: android
 
     - name: Get APK/AAB Filename
       id: apk_path
       run: |
-        echo "APK_PATH=$(find app/build/outputs -name "*.apk" -o -name "*.aab" | head -n 1)" >> $GITHUB_ENV
+        echo "APK_PATH=$(find app/build/outputs -name \"*.apk\" -o -name \"*.aab\" | head -n 1)" >> $GITHUB_ENV
+      working-directory: android
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
