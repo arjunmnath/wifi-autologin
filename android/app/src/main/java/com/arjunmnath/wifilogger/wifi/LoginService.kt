@@ -74,6 +74,12 @@ class LoginService : Service() {
 
 
     private fun loginAction() {
+        updateNotification(
+            title = "Wifi Auto Login",
+            message = "trying to login...",
+            onGoing = false,
+            indents = arrayOf()
+        )
         CoroutineScope(Dispatchers.IO).launch {
             var handler = LoginHandler(this@LoginService)
             state = handler.initiateLogin()

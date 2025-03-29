@@ -69,6 +69,9 @@ class LoginHandler() {
 
 
     suspend fun get(urlString: String): String? {
+        if (!::network.isInitialized) {
+            Log.e("LoginHandler:get", "Network not initialized")
+        }
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL(urlString)
@@ -190,6 +193,9 @@ class LoginHandler() {
     }
 
     private suspend fun doLoginRequest(URL: String, map: MutableMap<String, String>) : LoginState {
+        if (!::network.isInitialized) {
+            Log.e("LoginHandler:get", "Network not initialized")
+        }
         nReTries--
         val loginPayload = FormBody.Builder()
         for ((key, value) in map) {
