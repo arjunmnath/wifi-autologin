@@ -43,7 +43,7 @@ class LoginHandler() {
         val networks: Array<Network> = cm.allNetworks
         for (network in networks) {
             val networkCapabilities = cm.getNetworkCapabilities(network)
-            println("🔍 Network: $network | Capabilities: $networkCapabilities")
+            Log.d("getWifiNetwork", "🔍 Network: $network | Capabilities: $networkCapabilities")
             when {
                 networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> {
                     val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -67,12 +67,6 @@ class LoginHandler() {
                 else ->
                     println("Other Network: $network")
             }
-        }
-        if (::network.isInitialized) {
-            println("Selected Network: $network")
-        } else {
-            // TODO: raise an error
-            println("network not select");
         }
         return LoginState.WIFINOTCONNECTED
     }
@@ -105,6 +99,12 @@ class LoginHandler() {
 
     suspend fun initiateLogin(): LoginState {
         val state = checkLoginStatus()
+        val wifiStatus = getWifiNetwork(context);
+        if (
+            wifiStatus == LoginState.WIFINOTCONNECTED ||
+            wifiStatus == LoginState.LOGGEDIN) {
+            return  wifiStatus
+        }
         if (state == LoginState.LOGGEDIN) {
             return state
         }
@@ -122,7 +122,7 @@ class LoginHandler() {
     }
 
     private fun extractLoginPortalURL(html: String): String? {
-        val regex = """http:\/\/172\.16\.222\.1:1000\/fgtauth\?([a-fA-F0-9]+)""".toRegex()
+        val regex = """http?://([^/]+)""".toRegex()
         val matchResult = regex.find(html)
         if (matchResult != null) {
             val entireUrl = matchResult.value
