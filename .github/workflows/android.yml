@@ -1,0 +1,55 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-android'
+permissions:
+  contents: write
+  
+jobs:
+  build:
+    name: Build and Release APK/AAB
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Decode Keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
+
+    - name: Build Release APK/AAB
+      run: ./gradlew assembleRelease bundleRelease
+
+    - name: Sign APK
+      run: |
+        ./gradlew signingReport
+        ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=keystore.jks \
+          -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+    - name: Get APK/AAB Filename
+      id: apk_path
+      run: |
+        echo "APK_PATH=$(find app/build/outputs -name "*.apk" -o -name "*.aab" | head -n 1)" >> $GITHUB_ENV
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref }}
+        files: ${{ env.APK_PATH }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
