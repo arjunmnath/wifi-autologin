@@ -45,11 +45,14 @@ jobs:
           -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
       working-directory: android
 
+    - name: Debug APK Path
+      run: ls -al app/build/outputs/apk/release/
+      working-directory: android
+      
     - name: Get APK/AAB Filename
       id: apk_path
       run: |
-        echo "APK_PATH=$(find app/build/outputs/apk/release/ -name \"*.apk\" | head -n 1)" >> $GITHUB_ENV
-      working-directory: android
+        echo "APK_PATH=$(find android/app/build/outputs/apk/release/ -name '*.apk' | head -n 1)" >> $GITHUB_ENV
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
