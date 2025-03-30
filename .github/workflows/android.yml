@@ -48,7 +48,7 @@ jobs:
     - name: Get APK/AAB Filename
       id: apk_path
       run: |
-        echo "APK_PATH=$(find app/build/outputs \( -name \"*.apk\" -o -name \"*.aab\" \) | head -n 1)" >> $GITHUB_ENV
+        echo "APK_PATH=$(find app/build/outputs/apk/release/ -name \"*.apk\" | head -n 1)" >> $GITHUB_ENV
       working-directory: android
 
     - name: Create GitHub Release
