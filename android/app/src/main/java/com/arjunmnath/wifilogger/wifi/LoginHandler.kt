@@ -8,7 +8,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.util.Log
-import com.arjunmnath.wifilogger.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
@@ -154,7 +153,7 @@ class LoginHandler() {
 //                    return LoginState.CREDUNAVAILABLE
 //                }
             val properties = Properties().apply {
-                ContextWrapper(context).resources.openRawResource(R.raw.config).use { load(it) }
+                ContextWrapper(context).resources.openRawResource(com.arjunmnath.wifilogger.R.raw.config).use { load(it) }
             }
             val username = properties.getProperty("username")
             val password = properties.getProperty("password")
